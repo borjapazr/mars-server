@@ -1,0 +1,89 @@
+version: "3.7"
+
+services:
+  ### Traefik is an open-source Edge Router that makes publishing your services a fun and easy experience ###
+  traefik:
+    container_name: traefik
+    image: traefik
+    restart: always
+    command:
+      ## Global settings ##
+      - --global.checkNewVersion=true
+      - --global.sendAnonymousUsage=true
+
+      ## Log Settings (options: ERROR, DEBUG, PANIC, FATAL, WARN, INFO) - https://docs.traefik.io/observability/logs ##
+      - --log=true
+      - --log.level=${LOG_LEVEL}
+      - --log.filePath=/srv/traefik/log/traefik.log
+      # - --log.format=json
+
+      ## Access Log - https://doc.traefik.io/traefik/observability/access-logs ##
+      - --accesslog=true
+      - --accesslog.filepath=/srv/traefik/accesslog/traefik-access.log
+      - --accesslog.fields.defaultmode=keep
+      - --accesslog.fields.headers.defaultmode=keep
+      - --accesslog.bufferingSize=100
+      # - --accesslog.format=json
+
+      ## Metrics - https://doc.traefik.io/traefik/observability/metrics/overview ##
+      - --metrics=true
+      - --metrics.prometheus=true
+
+      ## API Settings - https://docs.traefik.io/operations/api/, endpoints - https://docs.traefik.io/operations/api/#endpoints ##
+      - --api=true
+      - --api.insecure=true
+      - --api.dashboard=true
+      - --api.debug=true
+      - --ping=true
+
+      ## Provider Settings - https://docs.traefik.io/providers/docker/#provider-configuration ##
+      - --providers.docker=true
+      - --providers.docker.watch=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=traefik-network
+      - --providers.file.watch=true
+      - --providers.file.directory=/srv/traefik/rules
+
+      ## Entrypoints Settings - https://docs.traefik.io/routing/entrypoints/#configuration ##
+      - --entryPoints.web.address=:80
+      - --entryPoints.websecure.address=:443
+      # Add Let's Encrypt as default certresolver for all services
+      - --entrypoints.websecure.http.tls.certresolver=letsencrypt
+
+      ## Global HTTP -> HTTPS redirection - https://blog.jensknipper.de/blog/traefik-http-to-https-redirect ##
+      # - --entryPoints.web.http.redirections.entryPoint.to=websecure
+      # - --entryPoints.web.http.redirections.entryPoint.scheme=https
+      # - --entryPoints.web.http.redirections.entryPoint.permanent=true
+
+      ## Certificate Settings (Let's Encrypt) -  https://docs.traefik.io/https/acme/#configuration-examples ##
+      - --certificatesResolvers.letsencrypt.acme.email=${ACME_EMAIL}
+      - --certificatesResolvers.letsencrypt.acme.storage=/srv/traefik/letsencrypt/acme.json
+      - --certificatesResolvers.letsencrypt.acme.tlsChallenge=true
+      - --certificatesResolvers.letsencrypt.acme.httpChallenge=true
+      - --certificatesResolvers.letsencrypt.acme.httpChallenge.entryPoint=web
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    volumes:
+      - ./traefik-data:/srv/traefik
+      - ./traefik-data/rules:/srv/traefik/rules
+      - ./traefik-data/letsencrypt:/srv/traefik/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - traefik.enable=true
+      # Global HTTP -> HTTPS redirection
+      # - "traefik.http.routers.http-catchall.entrypoints=http"
+      # - "traefik.http.routers.http-catchall.rule=HostRegexp(`{host:.+}`)"
+      # - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      # - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      # Traefik dashboard configuration
+      - traefik.http.routers.traefik.entrypoints=web
+      - traefik.http.routers.traefik.rule=Host(`${TRAEFIK_DASHBOARD_DOMAIN}`)
+      - traefik.http.routers.traefik.middlewares=basic-auth@file
+      - traefik.http.services.traefik.loadbalancer.server.port=8080
+
+networks:
+  default:
+    external:
+      name: traefik-network

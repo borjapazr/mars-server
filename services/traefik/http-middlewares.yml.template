@@ -1,0 +1,11 @@
+## Setting up the middleware for redirect to https ##
+http:
+  middlewares:
+    https_redirect:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+    basic-auth:
+      basicAuth:
+        usersFile: /srv/traefik/users-credentials

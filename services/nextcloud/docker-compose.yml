@@ -1,0 +1,109 @@
+version: "3.7"
+
+services:
+  nextcloud-mariadb:
+    image: mariadb:latest
+    container_name: nextcloud-mariadb
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    volumes:
+      - ./nextcloud-db:/var/lib/mysql
+
+  nextcloud-redis:
+    image: redis:latest
+    container_name: nextcloud-redis
+    restart: always
+
+  nextcloud-app:
+    image: nextcloud:latest
+    container_name: nextcloud-app
+    restart: always
+    environment:
+      ## Data directory ##
+      - NEXTCLOUD_DATA_DIR=/srv/nextcloud/data
+
+      ## Trusted domains ##
+      - NEXTCLOUD_TRUSTED_DOMAINS=${NEXTCLOUD_DOMAIN}
+
+      ## Database configuration ##
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+
+      ## Mail configuration ##
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_SECURE=${SMTP_SECURE}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_AUTHTYPE=${SMTP_AUTHTYPE}
+      - SMTP_NAME=${SMTP_NAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
+      - MAIL_DOMAIN=${MAIL_DOMAIN}
+
+      ## Apache configuration ##
+      - OVERWRITEPROTOCOL=https
+      - OVERWRITEHOST=${NEXTCLOUD_DOMAIN}
+
+      ## Containers link
+      - MYSQL_HOST=nextcloud-mariadb
+      - REDIS_HOST=nextcloud-redis
+      - TRUSTED_PROXIES=traefik
+    volumes:
+      - ./nextcloud-data/html:/var/www/html
+      - ./nextcloud-data/data:/srv/nextcloud/data
+    networks:
+      - default
+      - traefik-network
+    depends_on:
+      - nextcloud-mariadb
+      - nextcloud-redis
+    labels:
+      ### Traefik configuration ###
+      ## Enable Tarefik and global configuration ##
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+      - traefik.port=80
+
+      ## Set HTTP domain and HTTP -> HTTPS redirection ##
+      - traefik.http.routers.nextcloud.rule=Host(`${NEXTCLOUD_DOMAIN}`)
+      - traefik.http.routers.nextcloud.entrypoints=web
+      - traefik.http.routers.nextcloud.middlewares=https_redirect@file
+
+      ## Set HTTPS domain ##
+      - traefik.http.routers.nextcloud-secure.rule=Host(`${NEXTCLOUD_DOMAIN}`)
+      - traefik.http.routers.nextcloud-secure.entrypoints=websecure
+      - traefik.http.routers.nextcloud-secure.middlewares=nextcloud,nextcloud_redirect
+
+      ## Specific Nextcloud configuration
+      - traefik.http.middlewares.nextcloud.headers.stsSeconds=155520011
+      - traefik.http.middlewares.nextcloud.headers.stsIncludeSubdomains=true
+      - traefik.http.middlewares.nextcloud.headers.stsPreload=true
+      - traefik.http.middlewares.nextcloud.headers.contentTypeNosniff=true
+      - traefik.http.middlewares.nextcloud.headers.browserXSSFilter=true
+      - traefik.http.middlewares.nextcloud_redirect.redirectregex.permanent=true
+      - traefik.http.middlewares.nextcloud_redirect.redirectregex.regex=/.well-known/(card|cal)dav
+      - traefik.http.middlewares.nextcloud_redirect.redirectregex.replacement=/remote.php/dav/
+
+  nextcloud-cron:
+    image: nextcloud:apache:latest
+    container_name: nextcloud-cron
+    restart: always
+    entrypoint: /cron.sh
+    volumes:
+      - ./nextcloud-data/html:/var/www/html
+      - ./nextcloud-data/data:/srv/nextcloud/data
+    depends_on:
+      - nextcloud-mariadb
+      - nextcloud-redis
+
+networks:
+  default:
+    name: nextcloud-network
+  traefik-network:
+    external:
+      name: traefik-network

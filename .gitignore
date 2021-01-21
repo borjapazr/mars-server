@@ -1,0 +1,8 @@
+**/.env
+**/.disabled
+**/nextcloud/nextcloud-data
+**/nextcloud/nextcloud-db
+**/openvpn/clients
+**/openvpn/openvpn-data
+**/portainer/portainer-data
+**/traefik/traefik-data
