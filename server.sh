@@ -13,7 +13,13 @@ CYAN=$(tput -Txterm setaf 6)
 WHITE=$(tput -Txterm setaf 7)
 RESET=$(tput -Txterm sgr0)
 
-export SERVER_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do
+  SERVER_DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$SERVER_DIR/$SOURCE"
+done
+export SERVER_DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
 
 source "$SERVER_DIR/core/_main.sh"
 
