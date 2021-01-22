@@ -1,28 +1,32 @@
 ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 SERVICE := openvpn
 include $(ROOT_DIR)/../../core/common.mk
+include .env
 
 .ONESHELL:
-.PHONY: install uninstall add-user delete-user
 
+.PHONY: install
 install: ## Start all containers in background and prepare certificates
-	@docker-compose run --rm openvpn ovpn_genconfig -u udp://marsmachine.space
-	@docker-compose run --rm openvpn ovpn_initpki
-	@sudo chown -R $(whoami): ./openvpn-data
+	@$(DOCKER_COMPOSE) run --rm $(SERVICE) ovpn_genconfig -u udp://$(DOMAIN)
+	@$(DOCKER_COMPOSE) run --rm $(SERVICE) ovpn_initpki
+	@sudo chown -R $(whoami): $(VOLUME_DIR)/openvpn-data
 	@mkdir clients
-	@docker-compose up -d
+	@$(DOCKER_COMPOSE) up -d
 
+.PHONY: uninstall
 uninstall: ## Stop all containers and remove all data
-	@docker-compose down -v
-	@sudo rm -rf openvpn-data
+	@$(DOCKER_COMPOSE) down -v
+	@sudo rm -rf $(VOLUME_DIR)
 	@sudo rm -rf clients
 
+.PHONY: add-user
 add-user: ## Add a new user
 	@read -p "Enter username: " username
-	@docker-compose run --rm openvpn easyrsa build-client-full $${username}
-	@docker-compose run --rm openvpn ovpn_getclient $${username} > clients/$${username}.ovpn
+	@$(DOCKER_COMPOSE) run --rm $(SERVICE) easyrsa build-client-full $${username}
+	@$(DOCKER_COMPOSE) run --rm $(SERVICE) ovpn_getclient $${username} > clients/$${username}.ovpn
 
+.PHONY: delete-user
 delete-user: ## Remove a user
 	@read -p "Enter username: " username
-	@docker-compose run --rm openvpn ovpn_revokeclient $${username}
+	@$(DOCKER_COMPOSE) run --rm $(SERVICE) ovpn_revokeclient $${username}
 	@rm -rf clients/$${username}.ovpn

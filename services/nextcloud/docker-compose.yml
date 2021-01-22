@@ -1,6 +1,7 @@
 version: "3.7"
 
 services:
+  ## Nextcloud database: MariaDB ##
   nextcloud-mariadb:
     image: mariadb:latest
     container_name: nextcloud-mariadb
@@ -12,13 +13,15 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
     volumes:
-      - ./nextcloud-db:/var/lib/mysql
+      - ${VOLUME_DIR}/nextcloud-db:/var/lib/mysql
 
+  ## Nextcloud cache: Redis ##
   nextcloud-redis:
     image: redis:latest
     container_name: nextcloud-redis
     restart: always
 
+  ## Nextcloud application: Apache image ##
   nextcloud-app:
     image: nextcloud:latest
     container_name: nextcloud-app
@@ -28,7 +31,7 @@ services:
       - NEXTCLOUD_DATA_DIR=/srv/nextcloud/data
 
       ## Trusted domains ##
-      - NEXTCLOUD_TRUSTED_DOMAINS=${NEXTCLOUD_DOMAIN}
+      - NEXTCLOUD_TRUSTED_DOMAINS=${DOMAIN}
 
       ## Database configuration ##
       - MYSQL_USER=${MYSQL_USER}
@@ -47,15 +50,15 @@ services:
 
       ## Apache configuration ##
       - OVERWRITEPROTOCOL=https
-      - OVERWRITEHOST=${NEXTCLOUD_DOMAIN}
+      - OVERWRITEHOST=${DOMAIN}
 
       ## Containers link
       - MYSQL_HOST=nextcloud-mariadb
       - REDIS_HOST=nextcloud-redis
       - TRUSTED_PROXIES=traefik
     volumes:
-      - ./nextcloud-data/html:/var/www/html
-      - ./nextcloud-data/data:/srv/nextcloud/data
+      - ${VOLUME_DIR}/nextcloud-data/html:/var/www/html
+      - ${VOLUME_DIR}/nextcloud-data/data:/srv/nextcloud/data
     networks:
       - default
       - traefik-network
@@ -70,12 +73,12 @@ services:
       - traefik.port=80
 
       ## Set HTTP domain and HTTP -> HTTPS redirection ##
-      - traefik.http.routers.nextcloud.rule=Host(`${NEXTCLOUD_DOMAIN}`)
+      - traefik.http.routers.nextcloud.rule=Host(`${DOMAIN}`)
       - traefik.http.routers.nextcloud.entrypoints=web
       - traefik.http.routers.nextcloud.middlewares=https_redirect@file
 
       ## Set HTTPS domain ##
-      - traefik.http.routers.nextcloud-secure.rule=Host(`${NEXTCLOUD_DOMAIN}`)
+      - traefik.http.routers.nextcloud-secure.rule=Host(`${DOMAIN}`)
       - traefik.http.routers.nextcloud-secure.entrypoints=websecure
       - traefik.http.routers.nextcloud-secure.middlewares=nextcloud,nextcloud_redirect
 
@@ -89,14 +92,15 @@ services:
       - traefik.http.middlewares.nextcloud_redirect.redirectregex.regex=/.well-known/(card|cal)dav
       - traefik.http.middlewares.nextcloud_redirect.redirectregex.replacement=/remote.php/dav/
 
+  ## Nextcloud cron ##
   nextcloud-cron:
-    image: nextcloud:apache:latest
+    image: nextcloud:latest
     container_name: nextcloud-cron
     restart: always
     entrypoint: /cron.sh
     volumes:
-      - ./nextcloud-data/html:/var/www/html
-      - ./nextcloud-data/data:/srv/nextcloud/data
+      - ${VOLUME_DIR}/nextcloud-data/html:/var/www/html
+      - ${VOLUME_DIR}/nextcloud-data/data:/srv/nextcloud/data
     depends_on:
       - nextcloud-mariadb
       - nextcloud-redis

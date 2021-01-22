@@ -8,4 +8,4 @@ http:
 
     basic-auth:
       basicAuth:
-        usersFile: /srv/traefik/users-credentials
+        usersFile: /srv/traefik/credentials/users-credentials

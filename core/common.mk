@@ -2,7 +2,7 @@
 BLACK := $(shell tput -Txterm setaf 0)
 RED := $(shell tput -Txterm setaf 1)
 GREEN := $(shell tput -Txterm setaf 2)
-YELLOW:= $(shell tput -Txterm setaf 3)
+YELLOW := $(shell tput -Txterm setaf 3)
 BLUE := $(shell tput -Txterm setaf 4)
 MAGENTA := $(shell tput -Txterm setaf 5)
 CYAN := $(shell tput -Txterm setaf 6)

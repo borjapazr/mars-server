@@ -1,6 +1,7 @@
 version: '3.7'
 
 services:
+  ## Portainer ##
   portainer:
     image: portainer/portainer-ce
     container_name: portainer
@@ -10,8 +11,8 @@ services:
       - 9000:9000
       - 8000:8000
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./portainer-data:/data
+      - ${VOLUME_DIR}/portainer-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
 
 networks:
   default:

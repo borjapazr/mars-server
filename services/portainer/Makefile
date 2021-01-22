@@ -1,13 +1,15 @@
 ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 SERVICE := portainer
 include $(ROOT_DIR)/../../core/common.mk
+include .env
 
 .ONESHELL:
-.PHONY: install uninstall
 
+.PHONY: install
 install: ## Start all containers in background
-	@docker-compose up -d
+	@$(DOCKER_COMPOSE) up -d
 
+.PHONY: uninstall
 uninstall: ## Stop all containers and remove all data
-	@docker-compose down -v
-	@sudo rm -rf portainer-data
+	@$(DOCKER_COMPOSE) down -v
+	@sudo rm -rf $(VOLUME_DIR)

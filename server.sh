@@ -3,30 +3,48 @@
 set -Eeuo pipefail
 trap _cleanup SIGINT SIGTERM ERR EXIT
 
+BLACK=$(tput -Txterm setaf 0)
+RED=$(tput -Txterm setaf 1)
+GREEN=$(tput -Txterm setaf 2)
+YELLOW=$(tput -Txterm setaf 3)
+BLUE=$(tput -Txterm setaf 4)
+MAGENTA=$(tput -Txterm setaf 5)
+CYAN=$(tput -Txterm setaf 6)
+WHITE=$(tput -Txterm setaf 7)
+RESET=$(tput -Txterm sgr0)
+
 export SERVER_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 
 source "$SERVER_DIR/core/_main.sh"
 
 _usage() {
   cat <<EOF
-Usage: $(basename "${BASH_SOURCE[0]}") [OPTIONS] COMMAND
+Usage: $(basename "${BASH_SOURCE[0]}") ${MAGENTA}[OPTIONS]${RESET} ${BLUE}COMMAND${RESET}
 
-Script description here.
+${CYAN}This script aims to manage a home server based on Docker, Docker Compose, Make and Bash.${RESET}
 
-Available options:
+${WHITE}Available options:${RESET}
+  ${YELLOW}-h, --help      ${GREEN}Print this help and exit${RESET}
 
--h, --help      Print this help and exit
+${WHITE}Available commands:${RESET}
+  ${YELLOW}install         ${GREEN}Install all services${RESET}
+  ${YELLOW}uninstall       ${GREEN}Uninstall all services${RESET}
+  ${YELLOW}start           ${GREEN}Start all services${RESET}
+  ${YELLOW}stop            ${GREEN}Stop all services${RESET}
+  ${YELLOW}restart         ${GREEN}Restart all services${RESET}
+  ${YELLOW}status          ${GREEN}Get the status of all services${RESET}
+  ${YELLOW}services        ${GREEN}Open a menu based on FZF to manage the services separately${RESET}
+
 EOF
   exit
 }
 
 _cleanup() {
   trap - SIGINT SIGTERM ERR EXIT
-  # script cleanup here
 }
 
 _parse_params() {
-  allowed_commands=(install start stop restart status services)
+  allowed_commands=(install uninstall start stop restart status services)
 
   while :; do
     case "${1-}" in
@@ -63,6 +81,7 @@ _check_requirements() {
 }
 
 _install() {
+  _check_requirements
   docker network create traefik-network
   for service in "${SERVICES[@]}"
   do
@@ -71,11 +90,11 @@ _install() {
 }
 
 _uninstall() {
-  docker network create traefik-network
   for service in "${SERVICES[@]}"
   do
     make -s -C "$SERVER_DIR/services/$service" uninstall
   done
+  docker network rm traefik-network
 }
 
 _start() {
@@ -134,7 +153,6 @@ MINIMUM_MAKE_VERSION=4.2
 
 ## Logic ##
 _parse_params "$@"
-#_check_requirements
 
 case "${args[0]-}" in
   install) _install ;;

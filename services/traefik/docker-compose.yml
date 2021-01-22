@@ -66,20 +66,21 @@ services:
       - 443:443
       - 8080:8080
     volumes:
-      - ./traefik-data:/srv/traefik
-      - ./traefik-data/rules:/srv/traefik/rules
-      - ./traefik-data/letsencrypt:/srv/traefik/letsencrypt
+      - ${VOLUME_DIR}/traefik-data:/srv/traefik
+      - ${VOLUME_DIR}/traefik-data/letsencrypt:/srv/traefik/letsencrypt
+      - ./rules:/srv/traefik/rules
+      - ./credentials:/srv/traefik/credentials
       - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
       - traefik.enable=true
       # Global HTTP -> HTTPS redirection
-      # - "traefik.http.routers.http-catchall.entrypoints=http"
-      # - "traefik.http.routers.http-catchall.rule=HostRegexp(`{host:.+}`)"
-      # - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
-      # - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      # - traefik.http.routers.http-catchall.entrypoints=http
+      # - traefik.http.routers.http-catchall.rule=HostRegexp(`{host:.+}`)
+      # - traefik.http.routers.http-catchall.middlewares=redirect-to-https
+      # - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
       # Traefik dashboard configuration
       - traefik.http.routers.traefik.entrypoints=web
-      - traefik.http.routers.traefik.rule=Host(`${TRAEFIK_DASHBOARD_DOMAIN}`)
+      - traefik.http.routers.traefik.rule=Host(`${DASHBOARD_DOMAIN}`)
       - traefik.http.routers.traefik.middlewares=basic-auth@file
       - traefik.http.services.traefik.loadbalancer.server.port=8080
 
