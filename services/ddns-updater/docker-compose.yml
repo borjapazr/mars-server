@@ -1,0 +1,59 @@
+
+version: "3.7"
+
+services:
+  ### DDNS Updater: Light container updating DNS A and/or AAAA records periodically for multiple DNS providers ###
+  ddns-updater:
+    image: qmcgaw/ddns-updater
+    container_name: ddns-updater
+    restart: always
+    environment:
+      - PERIOD=5m
+      - UPDATE_COOLDOWN_PERIOD=5m
+      - IP_METHOD=cycle
+      - IPV4_METHOD=cycle
+      - IPV6_METHOD=cycle
+      - HTTP_TIMEOUT=10s
+      - LISTENING_PORT=8080
+      - ROOT_URL=/
+      - BACKUP_PERIOD=0
+      - BACKUP_DIRECTORY=/updater/data
+      - LOG_ENCODING=console
+      - LOG_LEVEL=info
+      - GOTIFY_URL=${GOTIFY_ENDPOINT}
+      - GOTIFY_TOKEN=${GOTIFY_TOKEN}
+      - TZ=${TZ}
+    volumes:
+      - ./data:/updater/data
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+      - diun.watch_repo=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.ddns-updater.loadbalancer.server.port=8080
+
+      # Set HTTP domain #
+      - traefik.http.routers.ddns-updater.entrypoints=web
+      - traefik.http.routers.ddns-updater.rule=Host(`${DOMAIN}`)
+
+networks:
+  default:
+    name: ddns-updater-network
+  traefik-network:
+    external:
+      name: traefik-network
+
+
+

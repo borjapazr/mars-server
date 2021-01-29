@@ -1,0 +1,53 @@
+version: "3.7"
+
+services:
+  ### Gotify: A simple server for sending and receiving messages in real-time per WebSocket. (Includes a sleek web-ui) ###
+  gotify:
+    image: gotify/server
+    container_name: gotify
+    restart: always
+    environment:
+      - GOTIFY_SERVER_PORT=80
+      - GOTIFY_SERVER_SSL_ENABLED=false
+      - GOTIFY_SERVER_SSL_REDIRECTTOHTTPS=false
+      - GOTIFY_DEFAULTUSER_NAME=${DEFAULT_USERNAME}
+      - GOTIFY_DEFAULTUSER_PASS=${DEFAULT_PASSWORD}
+      - GOTIFY_DATABASE_DIALECT=sqlite3
+      - GOTIFY_DATABASE_CONNECTION=data/gotify.db
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/gotify-data:/app/data
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+      - diun.watch_repo=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.gotify.loadbalancer.server.port=80
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.gotify.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.gotify.entrypoints=web
+      - traefik.http.routers.gotify.middlewares=https_redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.gotify-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.gotify-secure.entrypoints=websecure
+
+networks:
+  default:
+    name: gotify-network
+  traefik-network:
+    external:
+      name: traefik-network

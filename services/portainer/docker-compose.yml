@@ -1,4 +1,4 @@
-version: '3.7'
+version: "3.7"
 
 services:
   ## Portainer ##
@@ -6,14 +6,38 @@ services:
     image: portainer/portainer-ce
     container_name: portainer
     restart: always
+    environment:
+      - TZ=${TZ}
     command: -H unix:///var/run/docker.sock
-    ports:
-      - 9000:9000
-      - 8000:8000
     volumes:
       - ${VOLUME_DIR}/portainer-data:/data
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+      - diun.watch_repo=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.portainer.loadbalancer.server.port=9000
+
+      # Set HTTP domain #
+      - traefik.http.routers.portainer.entrypoints=web
+      - traefik.http.routers.portainer.rule=Host(`${DOMAIN}`)
 
 networks:
   default:
     name: portainer-network
+  traefik-network:
+    external:
+      name: traefik-network

@@ -120,7 +120,7 @@ _stop() {
 _restart() {
   for service in "${SERVICES[@]}"
   do
-    make -C "$SERVER_DIR/services/$service" restart
+    make -s -C "$SERVER_DIR/services/$service" restart
   done
 }
 
@@ -140,7 +140,7 @@ _services() {
   for service in "${SERVICES[@]}"
     do
       if [ ! -f "$SERVER_DIR/services/$service/.disabled" ]; then
-        services_string+="$(make -pRrq -C "$SERVER_DIR/services/$service" : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($1 !~ "^[#.]") {print $1}}' | sort | egrep -v -e '^[^[:alnum:]]' | awk -v service_prefix="${service} " '{ print service_prefix $0}' || true)\n"
+        services_string+="$(make -pRrq -C "$SERVER_DIR/services/$service" : 2>/dev/null | awk -F':' '/^[a-zA-Z0-9][^$#\/\t=]*:([^=]|$)/ && !/Makefile/ {split($1,A,/ /);for(i in A)print A[i]}' | uniq | sort | awk -v service_prefix="${service} " '{ print service_prefix $0}' || true)\n"
       else
         services_string+="$service enable\n"
       fi

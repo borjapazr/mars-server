@@ -1,0 +1,52 @@
+version: "3.7"
+
+services:
+  ### Error Pages: Static server error pages in docker image ###
+  error-pages:
+    image: tarampampam/error-pages
+    container_name: error-pages
+    restart: always
+    environment:
+      TEMPLATE_NAME: ghost
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+      - diun.watch_repo=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      ## Set entrypoint port ##
+      - traefik.http.services.error-pages.loadbalancer.server.port=8080
+
+      ## Set HTTP domain and HTTP -> HTTPS redirection ##
+      - traefik.http.routers.error-pages.rule=HostRegexp(`{host:.+}`)
+      - traefik.http.routers.error-pages.priority=10
+      - traefik.http.routers.error-pages.entrypoints=web
+      - traefik.http.routers.error-pages.middlewares=https_redirect@file
+
+      ## Set HTTPS domain ##
+      - traefik.http.routers.error-pages-secure.rule=HostRegexp(`{host:.+}`)
+      - traefik.http.routers.error-pages-secure.priority=10
+      - traefik.http.routers.error-pages-secure.entrypoints=websecure
+      - traefik.http.routers.error-pages-secure.middlewares=error-pages
+
+      ## Set error-pages middleware ##
+      - traefik.http.middlewares.error-pages.errors.status=400-599
+      - traefik.http.middlewares.error-pages.errors.service=error-pages
+      - traefik.http.middlewares.error-pages.errors.query=/{status}.html
+
+networks:
+  default:
+    name: error-pages-network
+  traefik-network:
+    external:
+      name: traefik-network

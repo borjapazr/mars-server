@@ -1,11 +1,15 @@
 version: "3.7"
 
 services:
-  ### Traefik is an open-source Edge Router that makes publishing your services a fun and easy experience ###
+  ### Traefik: An open-source Edge Router that makes publishing your services a fun and easy experience ###
   traefik:
-    container_name: traefik
     image: traefik
+    container_name: traefik
     restart: always
+    environment:
+      - NAMECHEAP_API_KEY=${NAMECHEAP_API_KEY}
+      - NAMECHEAP_API_USER=${NAMECHEAP_API_USER}
+      - TZ=${TZ}
     command:
       ## Global settings ##
       - --global.checkNewVersion=true
@@ -48,6 +52,7 @@ services:
       - --entryPoints.web.address=:80
       - --entryPoints.websecure.address=:443
       # Add Let's Encrypt as default certresolver for all services
+      - --entrypoints.websecure.http.tls=true
       - --entrypoints.websecure.http.tls.certresolver=letsencrypt
 
       ## Global HTTP -> HTTPS redirection - https://blog.jensknipper.de/blog/traefik-http-to-https-redirect ##
@@ -58,13 +63,11 @@ services:
       ## Certificate Settings (Let's Encrypt) -  https://docs.traefik.io/https/acme/#configuration-examples ##
       - --certificatesResolvers.letsencrypt.acme.email=${ACME_EMAIL}
       - --certificatesResolvers.letsencrypt.acme.storage=/srv/traefik/letsencrypt/acme.json
-      - --certificatesResolvers.letsencrypt.acme.tlsChallenge=true
-      - --certificatesResolvers.letsencrypt.acme.httpChallenge=true
-      - --certificatesResolvers.letsencrypt.acme.httpChallenge.entryPoint=web
+      - --certificatesresolvers.letsencrypt.acme.dnschallenge=true
+      - --certificatesresolvers.letsencrypt.acme.dnschallenge.provider=namecheap
     ports:
       - 80:80
       - 443:443
-      - 8080:8080
     volumes:
       - ${VOLUME_DIR}/traefik-data:/srv/traefik
       - ${VOLUME_DIR}/traefik-data/letsencrypt:/srv/traefik/letsencrypt
@@ -72,16 +75,33 @@ services:
       - ./credentials:/srv/traefik/credentials
       - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
+      ## Watchtower configuration: Only enable monitoring ##
+      - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.monitor-only=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+      - diun.watch_repo=true
+
+      ## Traefik configuration ##
+      # Enable Traefik and global configuration #
       - traefik.enable=true
+
       # Global HTTP -> HTTPS redirection
       # - traefik.http.routers.http-catchall.entrypoints=http
       # - traefik.http.routers.http-catchall.rule=HostRegexp(`{host:.+}`)
       # - traefik.http.routers.http-catchall.middlewares=redirect-to-https
       # - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+
+      # Global wildcard certificates
+      - traefik.http.routers.wildcard-certs.tls.certresolver=letsencrypt
+      - traefik.http.routers.wildcard-certs.tls.domains[0].main=marsmachine.space
+      - traefik.http.routers.wildcard-certs.tls.domains[0].sans=*.marsmachine.space
+
       # Traefik dashboard configuration
       - traefik.http.routers.traefik.entrypoints=web
       - traefik.http.routers.traefik.rule=Host(`${DASHBOARD_DOMAIN}`)
-      - traefik.http.routers.traefik.middlewares=basic-auth@file
+      - traefik.http.routers.traefik.middlewares=basic_auth@file
       - traefik.http.services.traefik.loadbalancer.server.port=8080
 
 networks:

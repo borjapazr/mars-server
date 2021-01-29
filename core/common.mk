@@ -72,7 +72,7 @@ start: CMD = start $(c) ## Start all or c=<name> containers
 stop: CMD = stop $(c)## Stop all or c=<name> containers
 
 .PHONY: restart
-restart: stop start ## Restart all or c=<name> containers
+restart: down up ## Restart all or c=<name> containers
 
 .PHONY: status
 status: CMD = ps ## Show status of containers

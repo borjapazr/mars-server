@@ -1,0 +1,33 @@
+version: "3.7"
+
+services:
+  ### Diun: Receive notifications when an image is updated on a Docker registry ###
+  diun:
+    image: crazymax/diun
+    container_name: diun
+    restart: always
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL}
+      - LOG_JSON=false
+      - DIUN_WATCH_WORKERS=20
+      - DIUN_WATCH_SCHEDULE=0 0 7 * * *
+      - DIUN_PROVIDERS_DOCKER=true
+      - DIUN_PROVIDERS_DOCKER_WATCHBYDEFAULT=false
+      - DIUN_PROVIDERS_DOCKER_WATCHSTOPPED=true
+      - DIUN_NOTIF_GOTIFY_ENDPOINT=${GOTIFY_ENDPOINT}
+      - DIUN_NOTIF_GOTIFY_TOKEN=${GOTIFY_ENDPOINT}
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/diun-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+      - diun.watch_repo=true
+
+networks:
+  default:
+    name: diun-network

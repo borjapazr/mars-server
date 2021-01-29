@@ -1,17 +1,27 @@
 version: '3.7'
 
 services:
-  ## OpenVPN ##
+  ### OpenVPN: OpenVPN server in a Docker container complete with an EasyRSA PKI CA ###
   openvpn:
-    image: kylemanna/openvpn:latest
+    image: kylemanna/openvpn
     container_name: openvpn
     restart: always
+    environment:
+      - TZ=${TZ}
     cap_add:
      - NET_ADMIN
     ports:
      - "1194:1194/udp"
     volumes:
      - ${VOLUME_DIR}/openvpn-data/conf:/etc/openvpn
+    labels:
+      ## Watchtower configuration: Only enable monitoring ##
+      - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.monitor-only=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+      - diun.watch_repo=true
 
 networks:
   default:

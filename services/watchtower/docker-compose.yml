@@ -1,0 +1,33 @@
+version: '3.7'
+
+services:
+  ### Watchover: A process for automating Docker container base image updates ###
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: always
+    environment:
+      - WATCHTOWER_LABEL_ENABLE=true
+      - WATCHTOWER_DEBUG=true
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_REMOVE_VOLUMES=true
+      - WATCHTOWER_SCHEDULE=0 0 8 * * *
+      - WATCHTOWER_NOTIFICATIONS_LEVEL=${NOTIFICATIONS_LEVEL}
+      - WATCHTOWER_NOTIFICATIONS=gotify
+      - WATCHTOWER_NOTIFICATION_GOTIFY_URL=${GOTIFY_ENDPOINT}
+      - WATCHTOWER_NOTIFICATION_GOTIFY_TOKEN=${GOTIFY_TOKEN}
+      - WATCHTOWER_NOTIFICATION_GOTIFY_TLS_SKIP_VERIFY=true
+      - TZ=${TZ}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+      - diun.watch_repo=true
+
+networks:
+  default:
+    name: watchtower-network

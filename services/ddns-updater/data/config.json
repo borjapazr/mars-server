@@ -1,0 +1,10 @@
+{
+  "settings": [
+    {
+      "provider": "namecheap",
+      "domain": "marsmachine.space",
+      "host": "@",
+      "password": "d8ab871e6ee440ce88d2b79a698e2170"
+    }
+  ]
+}

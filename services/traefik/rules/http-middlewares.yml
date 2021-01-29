@@ -6,6 +6,6 @@ http:
         scheme: https
         permanent: true
 
-    basic-auth:
+    basic_auth:
       basicAuth:
         usersFile: /srv/traefik/credentials/users-credentials
