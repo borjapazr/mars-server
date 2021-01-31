@@ -1,5 +1,5 @@
 ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-SERVICE := portainer
+SERVICE := gotify
 include $(ROOT_DIR)/../../core/common.mk
 include .env
 
