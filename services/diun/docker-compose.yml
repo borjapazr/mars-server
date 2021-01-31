@@ -26,7 +26,6 @@ services:
 
       ## Diun configuration ##
       - diun.enable=true
-      - diun.watch_repo=true
 
 networks:
   default:
