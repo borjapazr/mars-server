@@ -26,6 +26,9 @@ services:
     image: nextcloud
     container_name: nextcloud-app
     restart: always
+    depends_on:
+      - nextcloud-mariadb
+      - nextcloud-redis
     environment:
       ## Data directory ##
       - NEXTCLOUD_DATA_DIR=/srv/nextcloud/data
@@ -64,9 +67,6 @@ services:
     networks:
       - default
       - traefik-network
-    depends_on:
-      - nextcloud-mariadb
-      - nextcloud-redis
     labels:
       ## Watchtower configuration: Only enable monitoring ##
       - com.centurylinklabs.watchtower.enable=true
@@ -109,13 +109,13 @@ services:
     image: nextcloud
     container_name: nextcloud-cron
     restart: always
+    depends_on:
+      - nextcloud-mariadb
+      - nextcloud-redis
     entrypoint: /cron.sh
     volumes:
       - ${VOLUME_DIR}/nextcloud-data/html:/var/www/html
       - ${VOLUME_DIR}/nextcloud-data/data:/srv/nextcloud/data
-    depends_on:
-      - nextcloud-mariadb
-      - nextcloud-redis
 
 networks:
   default:

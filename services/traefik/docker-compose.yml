@@ -69,7 +69,8 @@ services:
       - 80:80
       - 443:443
     volumes:
-      - ${VOLUME_DIR}/traefik-data:/srv/traefik
+      - ${VOLUME_DIR}/traefik-data/log:/srv/traefik/log
+      - ${VOLUME_DIR}/traefik-data/accesslog:/srv/traefik/accesslog
       - ${VOLUME_DIR}/traefik-data/letsencrypt:/srv/traefik/letsencrypt
       - ./rules:/srv/traefik/rules
       - ./credentials:/srv/traefik/credentials
