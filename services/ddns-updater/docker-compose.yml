@@ -34,7 +34,6 @@ services:
 
       ## Diun configuration ##
       - diun.enable=true
-      - diun.watch_repo=true
 
       ## Traefik configuration ##
       # Enable Traefik #
