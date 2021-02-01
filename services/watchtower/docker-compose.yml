@@ -16,7 +16,6 @@ services:
       - WATCHTOWER_NOTIFICATIONS=gotify
       - WATCHTOWER_NOTIFICATION_GOTIFY_URL=${GOTIFY_ENDPOINT}
       - WATCHTOWER_NOTIFICATION_GOTIFY_TOKEN=${GOTIFY_TOKEN}
-      - WATCHTOWER_NOTIFICATION_GOTIFY_TLS_SKIP_VERIFY=true
       - TZ=${TZ}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
