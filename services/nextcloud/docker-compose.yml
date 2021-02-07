@@ -116,6 +116,53 @@ services:
       - ${VOLUME_DIR}/nextcloud-data/html:/var/www/html
       - ${VOLUME_DIR}/nextcloud-data/data:/srv/nextcloud/data
 
+  ### OnlyOffice: An online office suite comprising viewers and editors for texts, spreadsheets and presentations, fully compatible with Office Open XML formats: .docx, .xlsx, .pptx and enabling collaborative editing in real time. ###
+  nextcloud-onlyoffice:
+    image: onlyoffice/documentserver
+    container_name: nextcloud-onlyoffice
+    restart: always
+    environment:
+      - ONLYOFFICE_HTTPS_HSTS_ENABLED=false
+      - JWT_ENABLED=true
+      - JWT_SECRET=${ONLYOFFICE_TOKEN}
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/nextcloud-onlyoffice/data:/var/www/onlyoffice/Data
+      - ${VOLUME_DIR}/nextcloud-onlyoffice/log:/var/log/onlyoffice
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.onlyoffice.loadbalancer.server.port=80
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.onlyoffice.rule=Host(`${DOMAIN}`) && PathPrefix(`/onlyoffice`)
+      - traefik.http.routers.onlyoffice.entrypoints=web
+      - traefik.http.routers.onlyoffice.middlewares=https_redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.onlyoffice-secure.rule=Host(`${DOMAIN}`) && PathPrefix(`/onlyoffice`)
+      - traefik.http.routers.onlyoffice-secure.entrypoints=websecure
+      - traefik.http.routers.onlyoffice-secure.middlewares=onlyoffice,onlyoffice-strip
+
+      # Specific OnlyOffice configuration #
+      - traefik.http.middlewares.onlyoffice-strip.stripprefix.prefixes=/onlyoffice
+      - traefik.http.middlewares.onlyoffice-strip.stripprefix.forceSlash=true
+      - traefik.http.middlewares.onlyoffice.headers.customrequestheaders.X-Forwarded-Proto=https
+      - traefik.http.middlewares.onlyoffice.headers.customrequestheaders.X-Forwarded-Host=${DOMAIN}/onlyoffice
+
 networks:
   default:
     name: nextcloud-network
