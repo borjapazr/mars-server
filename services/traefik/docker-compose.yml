@@ -30,15 +30,15 @@ services:
       # - --accesslog.format=json
 
       ## Metrics - https://doc.traefik.io/traefik/observability/metrics/overview ##
-      - --metrics=true
-      - --metrics.prometheus=true
+      - --metrics=false
+      - --metrics.prometheus=false
 
       ## API Settings - https://docs.traefik.io/operations/api/, endpoints - https://docs.traefik.io/operations/api/#endpoints ##
       - --api=true
-      - --api.insecure=true
+      - --api.insecure=false
       - --api.dashboard=true
       - --api.debug=true
-      - --ping=true
+      - --ping=false
 
       ## Provider Settings - https://docs.traefik.io/providers/docker/#provider-configuration ##
       - --providers.docker=true
@@ -99,10 +99,10 @@ services:
       - traefik.http.routers.wildcard-certs.tls.domains[0].sans=*.marsmachine.space
 
       # Traefik dashboard configuration
-      - traefik.http.routers.traefik.entrypoints=web
-      - traefik.http.routers.traefik.rule=Host(`${DASHBOARD_DOMAIN}`)
-      - traefik.http.routers.traefik.middlewares=basic_auth@file
-      - traefik.http.services.traefik.loadbalancer.server.port=8080
+      - traefik.http.routers.api.entrypoints=web
+      - traefik.http.routers.api.rule=Host(`${DASHBOARD_DOMAIN}`)
+      - traefik.http.routers.api.service=api@internal
+      - traefik.http.routers.api.middlewares=basic_auth@file
 
 networks:
   default:
