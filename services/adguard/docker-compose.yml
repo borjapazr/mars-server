@@ -1,0 +1,44 @@
+version: "3.7"
+
+services:
+  ### AdGuard: AdGuard Home is a network-wide software for blocking ads & tracking. After you set it up, it'll cover ALL your home devices, and you don't need any client-side software for that ###
+  adguard:
+    image: adguard/adguardhome
+    container_name: adguard
+    restart: always
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/adguard-data:/opt/adguardhome/work
+      - ./config:/opt/adguardhome/conf
+    ports:
+      - ${DNS_IP}:53:53
+      - ${DNS_IP}:53:53/udp
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.adguard.loadbalancer.server.port=80
+
+      # Set HTTP domain #
+      - traefik.http.routers.adguard.entrypoints=web
+      - traefik.http.routers.adguard.rule=Host(`${DOMAIN}`)
+
+networks:
+  default:
+    name: adguard-network
+  traefik-network:
+    external:
+      name: traefik-network
