@@ -38,7 +38,7 @@ services:
       # Set HTTP domain and HTTP -> HTTPS redirection #
       - traefik.http.routers.gotify.rule=Host(`${DOMAIN}`)
       - traefik.http.routers.gotify.entrypoints=web
-      - traefik.http.routers.gotify.middlewares=https_redirect@file
+      - traefik.http.routers.gotify.middlewares=https-redirect@file
 
       # Set HTTPS domain #
       - traefik.http.routers.gotify-secure.rule=Host(`${DOMAIN}`)

@@ -30,7 +30,7 @@ services:
       - traefik.http.routers.error-pages.rule=HostRegexp(`{host:.+}`)
       - traefik.http.routers.error-pages.priority=10
       - traefik.http.routers.error-pages.entrypoints=web
-      - traefik.http.routers.error-pages.middlewares=https_redirect@file
+      - traefik.http.routers.error-pages.middlewares=https-redirect@file
 
       ## Set HTTPS domain ##
       - traefik.http.routers.error-pages-secure.rule=HostRegexp(`{host:.+}`)

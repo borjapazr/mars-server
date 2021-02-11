@@ -1,11 +1,46 @@
+## Setting up tls configuration: https://adminsecurity.guru/traefik-v2-ssllabs-A-plus ##
+tls:
+  options:
+    default:
+      minVersion: VersionTLS12
+      curvePreferences:
+        - secp521r1
+        - secp384r1
+      sniStrict: true
+      cipherSuites:
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+
+    mintls13:
+      minVersion: VersionTLS13
+
 ## Setting up the middleware for redirect to https ##
 http:
   middlewares:
-    https_redirect:
+    https-redirect:
       redirectScheme:
         scheme: https
         permanent: true
 
-    basic_auth:
+    basic-auth:
       basicAuth:
         usersFile: /srv/traefik/credentials/users-credentials
+
+    security-headers:
+      headers:
+        forceSTSHeader: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        frameDeny: true
+        sslRedirect: true
+        #  HSTS Configuration
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+        customRequestHeaders:
+          X-Frame-Options: "SAMEORIGIN"
+        customFrameOptionsValue: "SAMEORIGIN"

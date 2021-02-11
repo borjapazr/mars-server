@@ -51,6 +51,8 @@ services:
       ## Entrypoints Settings - https://docs.traefik.io/routing/entrypoints/#configuration ##
       - --entryPoints.web.address=:80
       - --entryPoints.websecure.address=:443
+      # Set security headers for https #
+      - --entryPoints.websecure.http.middlewares=security-headers@file
       # Add Let's Encrypt as default certresolver for all services
       - --entrypoints.websecure.http.tls=true
       - --entrypoints.websecure.http.tls.certresolver=letsencrypt
@@ -102,7 +104,7 @@ services:
       - traefik.http.routers.api.entrypoints=web
       - traefik.http.routers.api.rule=Host(`${DASHBOARD_DOMAIN}`)
       - traefik.http.routers.api.service=api@internal
-      - traefik.http.routers.api.middlewares=basic_auth@file
+      - traefik.http.routers.api.middlewares=basic-auth@file
 
 networks:
   default:
