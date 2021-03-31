@@ -1,0 +1,47 @@
+version: "3.7"
+
+services:
+  ## Heimdall ##
+  heimdall:
+    image: ghcr.io/linuxserver/heimdall
+    container_name: heimdall
+    restart: always
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/heimdall-data:/config
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.heimdall.loadbalancer.server.port=80
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.heimdall.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.heimdall.entrypoints=web
+      - traefik.http.routers.heimdall.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.heimdall-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.heimdall-secure.entrypoints=websecure
+
+networks:
+  default:
+    name: heimdall-network
+  traefik-network:
+    external:
+      name: traefik-network
