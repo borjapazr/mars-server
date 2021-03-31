@@ -1,4 +1,4 @@
-## Colors
+## Colors ##
 BLACK := $(shell tput -Txterm setaf 0)
 RED := $(shell tput -Txterm setaf 1)
 GREEN := $(shell tput -Txterm setaf 2)
@@ -9,7 +9,7 @@ CYAN := $(shell tput -Txterm setaf 6)
 WHITE := $(shell tput -Txterm setaf 7)
 RESET := $(shell tput -Txterm sgr0)
 
-## Help function
+## Help function ##
 HELP_FUN = \
     %help; \
     while(<>) { push @{$$help{$$2 // 'Targets'}}, [$$1, $$3] if /^([a-zA-Z\-]+)\s*:.*\#\#(?:@([a-zA-Z\-]+))?\s(.*)$$/ }; \
@@ -22,17 +22,17 @@ HELP_FUN = \
     }; \
     print "\n"; }
 
-## Docker commands
+## Docker commands ##
 DOCKER := docker
 DOCKER_COMPOSE := docker-compose
 DOCKER_COMPOSE_FILE := $(ROOT_DIR)/docker-compose.yml
 
-## Set 'sh' as default shell
+## Set 'sh' as default shell ##
 SHELL = /bin/sh
-## Set 'help' target as the default goal
+## Set 'help' target as the default goal ##
 .DEFAULT_GOAL := help
 
-## Common targets
+## Common targets ##
 .PHONY: help
 help: ## Show this help
 	@perl -e '$(HELP_FUN)' $(MAKEFILE_LIST)
@@ -69,7 +69,7 @@ destroy: CMD = down -v $(c) ## Destroy all or c=<name> containers
 start: CMD = start $(c) ## Start all or c=<name> containers
 
 .PHONY: stop
-stop: CMD = stop $(c)## Stop all or c=<name> containers
+stop: CMD = stop $(c) ## Stop all or c=<name> containers
 
 .PHONY: restart
 restart: down up ## Restart all or c=<name> containers

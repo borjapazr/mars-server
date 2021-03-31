@@ -1,0 +1,93 @@
+version: "3.7"
+
+services:
+  ### Paperless cache: Redis ###
+  paperless-redis:
+    image: redis
+    container_name: paperless-redis
+    restart: always
+  ### Paperless database: PostgreSQL ###
+  paperless-postgres:
+    image: postgres
+    container_name: paperless-postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - ${VOLUME_DIR}/paperless-db:/var/lib/postgresql/data
+  ### Gotenberg ###
+  paperless-gotenberg:
+    image: thecodingmachine/gotenberg
+    container_name: paperless-gotenberg
+    restart: always
+    environment:
+      - DISABLE_GOOGLE_CHROME=1
+  ### Tika ###
+  paperless-tika:
+    image: apache/tika
+    container_name: paperless-tika
+    restart: always
+  ## Paperless ##
+  paperless:
+    image: jonaswinkler/paperless-ng
+    container_name: paperless
+    restart: always
+    depends_on:
+      - paperless-postgres
+      - paperless-redis
+      - paperless-gotenberg
+      - paperless-tika
+    environment:
+      - COMPOSE_PROJECT_NAME=paperless
+      - PAPERLESS_SECRET_KEY=${SECRET_KEY}
+      - PAPERLESS_OCR_LANGUAGE=${LANGUAGE}
+      - PAPERLESS_REDIS=redis://paperless-redis:6379
+      - PAPERLESS_DBHOST=paperless-postgres
+      - PAPERLESS_DBUSER=${POSTGRES_USER}
+      - PAPERLESS_DBPASS=${POSTGRES_PASSWORD}
+      - PAPERLESS_DBNAME=${POSTGRES_DB}
+      - PAPERLESS_TIKA_ENABLED=1
+      - PAPERLESS_TIKA_GOTENBERG_ENDPOINT=http://paperless-gotenberg:3000
+      - PAPERLESS_TIKA_ENDPOINT=http://paperless-tika:9998
+      - TZ=${TZ}
+      - PAPERLESS_TIME_ZONE=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/data:/usr/src/paperless/data
+      - ${VOLUME_DIR}/media:/usr/src/paperless/media
+      - ${VOLUME_DIR}/export:/usr/src/paperless/export
+      - ${VOLUME_DIR}/consume:/usr/src/paperless/consume
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.paperless.loadbalancer.server.port=8000
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.paperless.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.paperless.entrypoints=web
+      - traefik.http.routers.paperless.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.paperless-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.paperless-secure.entrypoints=websecure
+
+networks:
+  default:
+    name: paperless-network
+  traefik-network:
+    external:
+      name: traefik-network

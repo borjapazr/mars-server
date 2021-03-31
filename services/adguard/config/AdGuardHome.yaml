@@ -3,7 +3,7 @@ bind_port: 80
 beta_bind_port: 0
 users:
 - name: admin
-  password: admin
+  password: $2a$10$jTYv/nhxh5.zQ0jNhnA3buQ47g06YPxFtSVZTHiKIu35/0xwHlvQ.
 http_proxy: ""
 language: ""
 rlimit_nofile: 0
@@ -12,7 +12,7 @@ web_session_ttl: 720
 dns:
   bind_host: 0.0.0.0
   port: 53
-  statistics_interval: 1
+  statistics_interval: 30
   querylog_enabled: true
   querylog_file_enabled: true
   querylog_interval: 90

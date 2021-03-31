@@ -23,7 +23,7 @@ indent_size = 4
 indent_style = ignore
 insert_final_newline = ignore
 
-[Makefile]
+[{Makefile,**.mk}]
 indent_style = tab
 
 [*.mk]

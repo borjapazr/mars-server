@@ -1,0 +1,75 @@
+version: "3.7"
+
+services:
+  ### Moodle database: MariaDB ###
+  moodle-mariadb:
+    image: mariadb
+    container_name: moodle-mariadb
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    volumes:
+      - ${VOLUME_DIR}/moodle-db:/var/lib/mysql
+  ## Moodle ##
+  moodle:
+    image: bitnami/moodle
+    container_name: moodle
+    restart: always
+    depends_on:
+      - moodle-mariadb
+    environment:
+      - MOODLE_USERNAME=${MOODLE_USER}
+      - MOODLE_PASSWORD=${MOODLE_PASSWORD}
+      - MOODLE_EMAIL=${MAIL}
+      - MOODLE_DATABASE_HOST=moodle-mariadb
+      - MOODLE_DATABASE_PORT_NUMBER=3306
+      - MOODLE_DATABASE_USER=${MYSQL_USER}
+      - MOODLE_DATABASE_PASSWORD=${MYSQL_PASSWORD}
+      - MOODLE_DATABASE_NAME=${MYSQL_DATABASE}
+      - ALLOW_EMPTY_PASSWORD=no
+      - MOODLE_SMTP_HOST=${SMTP_HOST}
+      - MOODLE_SMTP_PORT=${SMTP_PORT}
+      - MOODLE_SMTP_USER=${SMTP_USER}
+      - MOODLE_SMTP_PASSWORD=${SMTP_PASSWORD}
+      - MOODLE_SMTP_PROTOCOL=${SMTP_PROTOCOL}
+      - BITNAMI_DEBUG=true
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/moodle-data:/bitnami
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.moodle.loadbalancer.server.port=8080
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.moodle.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.moodle.entrypoints=web
+      - traefik.http.routers.moodle.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.moodle-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.moodle-secure.entrypoints=websecure
+
+networks:
+  default:
+    name: moodle-network
+  traefik-network:
+    external:
+      name: traefik-network
