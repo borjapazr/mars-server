@@ -99,9 +99,10 @@ services:
       # - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
 
       # Global wildcard certificates
+      - traefik.http.routers.wildcard-certs.entrypoints=websecure
       - traefik.http.routers.wildcard-certs.tls.certresolver=letsencrypt
-      - traefik.http.routers.wildcard-certs.tls.domains[0].main=marsmachine.space
-      - traefik.http.routers.wildcard-certs.tls.domains[0].sans=*.marsmachine.space
+      - traefik.http.routers.wildcard-certs.tls.domains[0].main=*.marsmachine.space
+      - traefik.http.routers.wildcard-certs.tls.domains[0].sans=marsmachine.space
 
       # Traefik dashboard configuration
       - traefik.http.routers.api.entrypoints=web
