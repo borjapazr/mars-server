@@ -14,7 +14,7 @@ services:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
     volumes:
       - ${VOLUME_DIR}/wordpress-db:/var/lib/mysql
-  ## Wordpress ##
+  ## Wordpress: WordPress is a free and open source blogging tool and a content management system (CMS) based on PHP and MySQL, which runs on a web hosting service ##
   wordpress:
     image: wordpress
     container_name: wordpress

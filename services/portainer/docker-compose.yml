@@ -1,7 +1,7 @@
 version: "3.7"
 
 services:
-  ## Portainer ##
+  ## Portainer: A universal container management tool. It works with Kubernetes, Docker, Docker Swarm and Azure ACI and allows you to manage containers without needing to know platform-specific code. ##
   portainer:
     image: portainer/portainer-ce
     container_name: portainer

@@ -17,19 +17,19 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - ${VOLUME_DIR}/paperless-db:/var/lib/postgresql/data
-  ### Gotenberg ###
+  ### Gotenberg: At TheCodingMachine, we build a lot of web applications (intranets, extranets and so on) which require to generate PDF from various sources. Each time, we ended up using some well known libraries and kind of lost time by reimplementing a solution from a project to another project. Meh. ###
   paperless-gotenberg:
     image: thecodingmachine/gotenberg
     container_name: paperless-gotenberg
     restart: always
     environment:
       - DISABLE_GOOGLE_CHROME=1
-  ### Tika ###
+  ### Tika: The Apache Tika™ toolkit detects and extracts metadata and text from over a thousand different file types (such as PPT, XLS, and PDF). ###
   paperless-tika:
     image: apache/tika
     container_name: paperless-tika
     restart: always
-  ## Paperless ##
+  ## Paperless: An application by Daniel Quinn and others that indexes your scanned documents and allows you to easily search for documents and store metadata alongside your documents. ##
   paperless:
     image: jonaswinkler/paperless-ng
     container_name: paperless
@@ -54,10 +54,10 @@ services:
       - TZ=${TZ}
       - PAPERLESS_TIME_ZONE=${TZ}
     volumes:
-      - ${VOLUME_DIR}/data:/usr/src/paperless/data
-      - ${VOLUME_DIR}/media:/usr/src/paperless/media
-      - ${VOLUME_DIR}/export:/usr/src/paperless/export
-      - ${VOLUME_DIR}/consume:/usr/src/paperless/consume
+      - ${VOLUME_DIR}/paperless-data/data:/usr/src/paperless/data
+      - ${VOLUME_DIR}/paperless-data/media:/usr/src/paperless/media
+      - ${VOLUME_DIR}/paperless-data/export:/usr/src/paperless/export
+      - ${VOLUME_DIR}/paperless-data/consume:/usr/src/paperless/consume
     networks:
       - default
       - traefik-network

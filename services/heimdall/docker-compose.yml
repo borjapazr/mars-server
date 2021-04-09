@@ -1,7 +1,7 @@
 version: "3.7"
 
 services:
-  ## Heimdall ##
+  ## Heimdall: a way to organise all those links to your most used web sites and web applications in a simple way. Simplicity is the key to Heimdall. ##
   heimdall:
     image: ghcr.io/linuxserver/heimdall
     container_name: heimdall

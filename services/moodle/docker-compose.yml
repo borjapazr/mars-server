@@ -14,7 +14,7 @@ services:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
     volumes:
       - ${VOLUME_DIR}/moodle-db:/var/lib/mysql
-  ## Moodle ##
+  ## Moodle: A very popular open source learning management solution (LMS) for the delivery of elearning courses and programs. ##
   moodle:
     image: bitnami/moodle
     container_name: moodle

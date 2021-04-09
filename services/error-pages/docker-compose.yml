@@ -7,7 +7,7 @@ services:
     container_name: error-pages
     restart: always
     environment:
-      - TEMPLATE_NAME=ghost
+      - TEMPLATE_NAME=shuffle
     networks:
       - default
       - traefik-network

@@ -2,3 +2,5 @@
 **/.disabled
 **/openvpn/clients
 **/ddns-updater/data
+**/netdata/config/health_alarm_notify.conf
+**/traefik/credentials

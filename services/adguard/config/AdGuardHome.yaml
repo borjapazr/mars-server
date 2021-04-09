@@ -3,7 +3,7 @@ bind_port: 80
 beta_bind_port: 0
 users:
 - name: admin
-  password: $2a$10$jTYv/nhxh5.zQ0jNhnA3buQ47g06YPxFtSVZTHiKIu35/0xwHlvQ.
+  password: $2y$12$HbsoiRP6gqqRRrvmjJGT2.90aRxePnALDG18hcIpPbO5xqsLLmAN.
 http_proxy: ""
 language: ""
 rlimit_nofile: 0

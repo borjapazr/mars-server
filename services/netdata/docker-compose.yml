@@ -1,0 +1,65 @@
+version: "3.7"
+
+services:
+  ### NetData: A is distributed, real-time, performance and health monitoring for systems and applications. It is a highly optimized monitoring agent you install on all your systems and containers. ###
+  netdata:
+    image: netdata/netdata
+    container_name: netdata
+    restart: always
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - apparmor:unconfined
+    environment:
+      - DOCKER_HOST=netdata-docker-proxy:2375
+      - TZ=${TZ}
+    volumes:
+      - ./config:/etc/netdata
+      - /etc/passwd:/host/etc/passwd:ro
+      - /etc/group:/host/etc/group:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/os-release:/host/etc/os-release:ro
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.netdata.loadbalancer.server.port=19999
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.netdata.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.netdata.entrypoints=web
+      - traefik.http.routers.netdata.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.netdata-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.netdata-secure.entrypoints=websecure
+      - traefik.http.routers.netdata-secure.middlewares=basic-auth@file
+  ### NetData Docker socket proxy ###
+  netdata-docker-proxy:
+    image: tecnativa/docker-socket-proxy
+    container_name: netdata-docker-proxy
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - CONTAINERS=1
+
+networks:
+  default:
+    name: netdata-network
+  traefik-network:
+    external:
+      name: traefik-network

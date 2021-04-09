@@ -101,8 +101,8 @@ services:
       # Global wildcard certificates
       - traefik.http.routers.wildcard-certs.entrypoints=websecure
       - traefik.http.routers.wildcard-certs.tls.certresolver=letsencrypt
-      - traefik.http.routers.wildcard-certs.tls.domains[0].main=*.marsmachine.space
-      - traefik.http.routers.wildcard-certs.tls.domains[0].sans=marsmachine.space
+      - traefik.http.routers.wildcard-certs.tls.domains[0].main=*.${DOMAIN}
+      - traefik.http.routers.wildcard-certs.tls.domains[0].sans=${DOMAIN}
 
       # Traefik dashboard configuration
       - traefik.http.routers.api.entrypoints=web
