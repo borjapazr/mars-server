@@ -26,8 +26,13 @@ services:
       - WORDPRESS_DB_USER=${MYSQL_USER}
       - WORDPRESS_DB_PASSWORD=${MYSQL_PASSWORD}
       - WORDPRESS_DB_NAME=${MYSQL_DATABASE}
+      - WORDPRESS_CONFIG_EXTRA=
+          define('WP_MEMORY_LIMIT', '256M');
+          define('WP_MAX_MEMORY_LIMIT', '512M');
       - TZ=${TZ}
     volumes:
+      - ./config/php.ini:/usr/local/etc/php/php.ini
+      - ./config/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
       - ${VOLUME_DIR}/wordpress-data:/var/www/html
     networks:
       - default

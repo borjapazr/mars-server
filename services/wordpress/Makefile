@@ -13,3 +13,7 @@ install: ## Start all containers in background
 uninstall: ## Stop all containers and remove all data
 	@$(DOCKER_COMPOSE) down -v
 	@sudo rm -rf $(VOLUME_DIR)
+
+.PHONY: fix-permissions
+fix-permissions: ## Fix volume permissions
+	@$(DOCKER) exec --user root $(SERVICE) chown -R www-data:www-data /var/www
