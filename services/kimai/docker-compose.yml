@@ -1,0 +1,71 @@
+version: "3.7"
+
+services:
+  ### Kimai database: MariaDB ###
+  kimai-mariadb:
+    image: mariadb
+    container_name: kimai-mariadb
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    volumes:
+      - ${VOLUME_DIR}/kimai-db:/var/lib/mysql
+  ## Kimai: Free Time-Tracking App ##
+  kimai:
+    image: kimai/kimai2:apache
+    container_name: kimai
+    restart: always
+    depends_on:
+      - kimai-mariadb
+    environment:
+      - APP_ENV=prod
+      - ADMINMAIL=${KIMAI_MAIL}
+      - ADMINPASS=${KIMAI_PASSWORD}
+      - DB_TYPE=mysql
+      - DB_HOST=kimai-mariadb
+      - DB_PORT=3306
+      - DB_USER=${MYSQL_USER}
+      - DB_PASS=${MYSQL_PASSWORD}
+      - DB_BASE=${MYSQL_DATABASE}
+      #- DATABASE_URL=mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@kimai-mariadb/${MYSQL_DATABASE}
+      - TRUSTED_HOSTS=kimai,localhost,127.0.0.1,kimai.marsmachine.space
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/kimai-data:/opt/kimai/public
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.kimai.loadbalancer.server.port=8001
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.kimai.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.kimai.entrypoints=web
+      - traefik.http.routers.kimai.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.kimai-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.kimai-secure.entrypoints=websecure
+
+networks:
+  default:
+    name: kimai-network
+  traefik-network:
+    external:
+      name: traefik-network
