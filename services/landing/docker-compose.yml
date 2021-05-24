@@ -1,0 +1,46 @@
+version: "3.7"
+
+services:
+  ### Nginx: Server landing page ###
+  landing:
+    image: nginx
+    container_name: landing
+    restart: always
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ./static:/usr/share/nginx/html
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.landing.loadbalancer.server.port=80
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.landing.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.landing.entrypoints=web
+      - traefik.http.routers.landing.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.landing-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.landing-secure.entrypoints=websecure
+      - traefik.http.routers.landing-secure.middlewares=error-pages
+
+networks:
+  default:
+    name: landing-network
+  traefik-network:
+    external:
+      name: traefik-network
