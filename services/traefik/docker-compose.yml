@@ -9,6 +9,8 @@ services:
     environment:
       - NAMECHEAP_API_KEY=${NAMECHEAP_API_KEY}
       - NAMECHEAP_API_USER=${NAMECHEAP_API_USER}
+      - CF_API_EMAIL=${CF_API_EMAIL}
+      - CF_API_KEY=${CF_API_KEY}
       - TZ=${TZ}
     command:
       ## Global settings ##
@@ -69,7 +71,10 @@ services:
       - --certificatesResolvers.letsencrypt.acme.email=${ACME_EMAIL}
       - --certificatesResolvers.letsencrypt.acme.storage=/srv/traefik/letsencrypt/acme.json
       - --certificatesresolvers.letsencrypt.acme.dnschallenge=true
-      - --certificatesresolvers.letsencrypt.acme.dnschallenge.provider=namecheap
+      - --certificatesresolvers.letsencrypt.acme.dnschallenge.delaybeforecheck=0
+      - --certificatesresolvers.letsencrypt.acme.dnschallenge.resolvers[0]=1.1.1.1:53
+      - --certificatesresolvers.letsencrypt.acme.dnschallenge.resolvers[1]=8.8.8.8:53
+      - --certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare
     ports:
       - 80:80
       - 443:443

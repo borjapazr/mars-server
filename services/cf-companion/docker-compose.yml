@@ -1,0 +1,39 @@
+
+version: "3.7"
+
+services:
+  ### Cloudflare-Companion: Automatic CNAME DNS Creation ###
+  cf-companion:
+    image: tiredofit/traefik-cloudflare-companion
+    container_name: cf-companion
+    restart: always
+    environment:
+      - TRAEFIK_VERSION=2
+      - CF_EMAIL=${CF_API_EMAIL}
+      - CF_TOKEN=${CF_API_KEY}
+      - TARGET_DOMAIN=${DOMAIN}
+      - DOMAIN1=${DOMAIN}
+      - DOMAIN1_ZONE_ID=${CF_DOMAIN_ZONE_ID}
+      - DOMAIN1_PROXIED=true
+      - TZ=${TZ}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+networks:
+  default:
+    name: cf-companion-network
+  traefik-network:
+    external:
+      name: traefik-network
+
+
+
