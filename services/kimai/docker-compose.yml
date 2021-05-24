@@ -31,7 +31,6 @@ services:
       - DB_USER=${MYSQL_USER}
       - DB_PASS=${MYSQL_PASSWORD}
       - DB_BASE=${MYSQL_DATABASE}
-      #- DATABASE_URL=mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@kimai-mariadb/${MYSQL_DATABASE}
       - TRUSTED_HOSTS=kimai,localhost,127.0.0.1,${DOMAIN}
       - TZ=${TZ}
     volumes:
