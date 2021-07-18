@@ -1,0 +1,104 @@
+version: "3.7"
+
+services:
+  ### Grafana database: MariaDB ###
+  grafana-mariadb:
+    image: mariadb
+    container_name: grafana-mariadb
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    volumes:
+      - ${VOLUME_DIR}/grafana-db/mariadb:/var/lib/mysql
+  ### Grafana database: Mongo ###
+  grafana-mongodb:
+    image: mongo
+    container_name: grafana-mongodb
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+    volumes:
+      - ${VOLUME_DIR}/grafana-db/mongodb:/data/db
+  grafana-adminer:
+    image: adminer
+    container_name: grafana-adminer
+    restart: always
+    environment:
+      - ADMINER_DEFAULT_SERVER=grafana-mariadb
+      - TZ=${TZ}
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.db-grafana.loadbalancer.server.port=8080
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.db-grafana.rule=Host(`db-${DOMAIN}`)
+      - traefik.http.routers.db-grafana.entrypoints=web
+      - traefik.http.routers.db-grafana.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.db-grafana-secure.rule=Host(`db-${DOMAIN}`)
+      - traefik.http.routers.db-grafana-secure.entrypoints=websecure
+  ## Grafana: The open and composable observability and data visualization platform ##
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    restart: always
+    user: "0"
+    environment:
+      - GF_INSTALL_PLUGINS=${GF_INSTALL_PLUGINS}
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/grafana-data/config:/var/lib/grafana
+      - ${VOLUME_DIR}/grafana-data/storage:/storage
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.grafana.loadbalancer.server.port=3000
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.grafana.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.grafana.entrypoints=web
+      - traefik.http.routers.grafana.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.grafana-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.grafana-secure.entrypoints=websecure
+
+networks:
+  default:
+    name: grafana-network
+  traefik-network:
+    external:
+      name: traefik-network
