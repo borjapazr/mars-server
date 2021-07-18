@@ -19,11 +19,11 @@ max_line_length = 80
 [*.php]
 indent_size = 4
 
-[**.min.js]
+[*.min.js]
 indent_style = ignore
 insert_final_newline = ignore
 
-[{Makefile,**.mk}]
+[{Makefile,*.mk}]
 indent_style = tab
 
 [*.mk]
