@@ -51,7 +51,7 @@ env: ## Create .env file from .env.template
 
 .PHONY: health
 health: ## Get service health
-	@if [ -z `$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) ps -q ${SERVICE}` ] || [ -z `$(DOCKER) ps -q --no-trunc | grep $$($(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) ps -q ${SERVICE})` ]; then echo "DOWN"; else echo "UP"; fi
+	@if [ "$$($(DOCKER) container inspect -f '{{.State.Status}}' $(SERVICE) 2>&1)" = "running" ]; then echo "UP"; else echo "DOWN"; fi
 
 .PHONY: build
 build: CMD = build $(c) ## Build all or c=<name> containers
