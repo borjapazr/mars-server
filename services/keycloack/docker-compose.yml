@@ -1,0 +1,65 @@
+version: "3.7"
+
+services:
+  ### Keycloak database: PostgreSQL ###
+  keycloak-postgres:
+    image: postgres
+    container_name: keycloak-postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - ${VOLUME_DIR}/keycloak-db:/var/lib/postgresql/data
+  ### Keycloak: An open source identity and access management solution ###
+  keycloak:
+    image: quay.io/keycloak/keycloak
+    container_name: keycloak
+    restart: always
+    depends_on:
+      - keycloak-postgres
+    environment:
+      - DB_VENDOR=POSTGRES
+      - DB_ADDR=keycloak-postgres
+      - DB_DATABASE=${POSTGRES_DB}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - KEYCLOAK_USER=${KEYCLOAK_USER}
+      - KEYCLOAK_PASSWORD=${KEYCLOAK_PASSWORD}
+      - KEYCLOAK_LOGLEVEL=DEBUG
+      - PROXY_ADDRESS_FORWARDING=true
+      - TZ=${TZ}
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.keycloak.loadbalancer.server.port=8080
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.keycloak.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.keycloak.entrypoints=web
+      - traefik.http.routers.keycloak.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.keycloak-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.keycloak-secure.entrypoints=websecure
+
+networks:
+  default:
+    name: keycloak-network
+  traefik-network:
+    external:
+      name: traefik-network
