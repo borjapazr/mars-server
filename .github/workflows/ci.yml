@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: 🧑‍🔬 Test Makefile and server.sh
+    name: 🧑‍🔬 Test server.sh
     runs-on: ubuntu-latest
 
     steps:
@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: 🆘 Show help
-        run: make help
+        run: ./server.sh --help
 
       - name: 🩹 Show server status
         run: ./server.sh status
