@@ -17,6 +17,3 @@ jobs:
 
       - name: 🆘 Show help
         run: ./server.sh --help
-
-      - name: 🩹 Show server status
-        run: ./server.sh status
