@@ -60,10 +60,10 @@ build: CMD = build $(c) ## Build all or c=<name> containers
 up: CMD = up -d $(c) ## Up all or c=<name> containers
 
 .PHONY: down
-down: CMD = down $(c) ## Down all or c=<name> containers
+down: CMD = down ## Down all containers
 
 .PHONY: destroy
-destroy: CMD = down -v $(c) ## Destroy all or c=<name> containers
+destroy: CMD = down -v ## Destroy all containers
 
 .PHONY: start
 start: CMD = start $(c) ## Start all or c=<name> containers

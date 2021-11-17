@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    name: 🧑‍🔬 Test Makefile and server.sh
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout project
+        uses: actions/checkout@v2
+
+      - name: 🆘 Show help
+        run: make help
+
+      - name: 🩹 Show server status
+        run: ./server.sh status
