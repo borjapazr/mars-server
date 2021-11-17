@@ -1,0 +1,20 @@
+akhq:
+  server:
+    access-log:
+      enabled: true
+      name: org.akhq.log.access
+      format: "[Date: {}] [Duration: {} ms] [Url: {} {}] [Status: {}] [Ip: {}] [User: {}]" # Logger format
+
+  clients-defaults:
+    consumer:
+      properties:
+        isolation.level: read_committed
+
+  connections:
+    traqus:
+      properties:
+        bootstrap.servers: "kafka:19092"
+
+  pagination:
+    page-size: 25
+    threads: 16

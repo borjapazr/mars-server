@@ -1,0 +1,92 @@
+version: "3.7"
+
+services:
+ ### MongoDB: A document-oriented NoSQL database used for high volume data storage ###
+  mongo:
+    image: mongo
+    container_name: mongo
+    hostname: mongo
+    restart: always
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGO_DB}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+      - TZ=${TZ}
+    volumes:
+      - ./config/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - ${VOLUME_DIR}/mongo-data/db/mongo:/data/db
+    ports:
+      - 27017-27019:27017-27019
+  ### Mongo Express: Web-based MongoDB admin interface written with Node.js, Express and Bootstrap3 ###
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    hostname: mongo-express
+    restart: always
+    depends_on:
+      - mongo
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=${MONGO_ROOT_USER}
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_ROOT_PASSWORD}
+      - ME_CONFIG_MONGODB_URL=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongo:27017/
+      - TZ=${TZ}
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.mongo-express.loadbalancer.server.port=8081
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.mongo-express.rule=Host(`mongo-express.${DOMAIN}`)
+      - traefik.http.routers.mongo-express.entrypoints=web
+      - traefik.http.routers.mongo-express.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.mongo-express-secure.rule=Host(`mongo-express.${DOMAIN}`)
+      - traefik.http.routers.mongo-express-secure.entrypoints=websecure
+      - traefik.http.routers.mongo-express-secure.middlewares=basic-auth@file
+  ### Mongo Client: Cross-platform and self hosted, easy to use, MongoDB 4.0+ support and more features! ###
+  mongo-client:
+    image: mongoclient/mongoclient
+    container_name: mongo-client
+    hostname: mongo-client
+    restart: always
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URL=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongo:27017/
+      - TZ=${TZ}
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.mongo-client.loadbalancer.server.port=3000
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.mongo-client.rule=Host(`mongo-client.${DOMAIN}`)
+      - traefik.http.routers.mongo-client.entrypoints=web
+      - traefik.http.routers.mongo-client.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.mongo-client-secure.rule=Host(`mongo-client.${DOMAIN}`)
+      - traefik.http.routers.mongo-client-secure.entrypoints=websecure
+      - traefik.http.routers.mongo-client-secure.middlewares=basic-auth@file
+
+networks:
+  default:
+    name: mongo-network
+  traefik-network:
+    external:
+      name: traefik-network
