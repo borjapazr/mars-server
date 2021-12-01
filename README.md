@@ -46,7 +46,7 @@ To realise this project I have based myself on many similar projects. There were
 
 ### ⭐ Stargazers
 
-[![Stargazers repo roster for @borjapazr/dotfiles](https://reporoster.com/stars/borjapazr/dotfiles)](https://github.com/borjapazr/dotfiles/stargazers)
+[![Stargazers repo roster for @borjapazr/mars-server](https://reporoster.com/stars/borjapazr/mars-server)](https://github.com/borjapazr/mars-server/stargazers)
 
 ## ⚖️ License
 
