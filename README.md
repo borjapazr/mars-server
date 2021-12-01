@@ -38,6 +38,16 @@ Available commands:
   services        Open a menu based on FZF to manage the services separately
 ```
 
+## 🎯 Credits
+
+To realise this project I have based myself on many similar projects. There were countless of them and I gave them all a star.
+
+🙏 Thank you very much for these wonderful creations.
+
+### ⭐ Stargazers
+
+[![Stargazers repo roster for @borjapazr/dotfiles](https://reporoster.com/stars/borjapazr/dotfiles)](https://github.com/borjapazr/dotfiles/stargazers)
+
 ## ⚖️ License
 
 The MIT License (MIT). Please see [License](LICENSE) for more information.
