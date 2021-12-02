@@ -1,4 +1,4 @@
-## Docker commands ##
+## Docker commands
 DOCKER := docker
 DOCKER_COMPOSE := docker-compose
 DOCKER_COMPOSE_FILE := $(ROOT_DIR)/docker-compose.yml
