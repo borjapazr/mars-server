@@ -86,19 +86,27 @@ _check_requirements() {
   checks::version_check ${MAKE_EXE_VERSION} ${MINIMUM_MAKE_VERSION} "Make"
 }
 
+_is_enabled() {
+  [[ ! -f "$SERVER_DIR/services/$1/.disabled" ]]
+}
+
 _install() {
   _check_requirements
   docker network create traefik-network
   for service in "${SERVICES[@]}"
   do
-    make -s -C "$SERVER_DIR/services/$service" install
+    if _is_enabled $service; then
+      make -s -C "$SERVER_DIR/services/$service" install
+    fi
   done
 }
 
 _uninstall() {
   for service in "${SERVICES[@]}"
   do
-    make -s -C "$SERVER_DIR/services/$service" uninstall
+    if _is_enabled $service; then
+      make -s -C "$SERVER_DIR/services/$service" uninstall
+    fi
   done
   docker network rm traefik-network
 }
@@ -106,21 +114,27 @@ _uninstall() {
 _start() {
   for service in "${SERVICES[@]}"
   do
-    make -s -C "$SERVER_DIR/services/$service" up
+    if _is_enabled $service; then
+      make -s -C "$SERVER_DIR/services/$service" up
+    fi
   done
 }
 
 _stop() {
   for service in "${SERVICES[@]}"
   do
-    make -s -C "$SERVER_DIR/services/$service" down
+    if _is_enabled $service; then
+      make -s -C "$SERVER_DIR/services/$service" down
+    fi
   done
 }
 
 _restart() {
   for service in "${SERVICES[@]}"
   do
-    make -s -C "$SERVER_DIR/services/$service" restart
+    if _is_enabled $service; then
+      make -s -C "$SERVER_DIR/services/$service" restart
+    fi
   done
 }
 
@@ -139,7 +153,7 @@ _status() {
 _services() {
   for service in "${SERVICES[@]}"
     do
-      if [ ! -f "$SERVER_DIR/services/$service/.disabled" ]; then
+      if _is_enabled $service; then
         services_string+="$(make -pRrq -C "$SERVER_DIR/services/$service" : 2>/dev/null | awk -F':' '/^[a-zA-Z0-9][^$#\/\t=]*:([^=]|$)/ && !/Makefile/ {split($1,A,/ /);for(i in A)print A[i]}' | uniq | sort | awk -v service_prefix="${service} " '{ print service_prefix $0}' || true)\n"
       else
         services_string+="$service enable\n"
