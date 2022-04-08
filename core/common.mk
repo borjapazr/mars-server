@@ -48,7 +48,7 @@ start: CMD = start $(c) ## Start all or c=<name> containers
 stop: CMD = stop $(c) ## Stop all or c=<name> containers
 
 .PHONY: restart
-restart: down up ## Restart all or c=<name> containers
+restart: CMD = restart $(c) ## Restart all or c=<name> containers
 
 .PHONY: status
 status: CMD = ps ## Show status of containers
@@ -56,5 +56,5 @@ status: CMD = ps ## Show status of containers
 .PHONY: logs
 logs: CMD = logs --tail=100 -f $(c) ## Show logs for all or c=<name> containers
 
-build up down start stop destroy logs status:
+build up down start stop restart destroy logs status:
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) $(CMD)
