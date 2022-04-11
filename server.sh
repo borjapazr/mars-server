@@ -139,15 +139,17 @@ _restart() {
 }
 
 _status() {
+  printf "\n%-30s %-10s %-10s\n" "SERVICE" "ENABLED" "STATUS"
+  printf "%0.s-" {1..50} && printf "\n"
   for service in "${SERVICES[@]}"
   do
     service_status=$(make -s -C "$SERVER_DIR/services/$service" health)
-    if [ "$service_status" == "UP" ]; then
-      log::success "$service is UP"
-    else
-      log::error "$service is DOWN"
-    fi
+    output_color=$([[ $service_status == "UP" ]] && echo "\e[32m" || echo "\e[31m")
+    status_icon=$([[ $service_status == "UP" ]] && echo "✔" || echo "✖")
+    is_enabled=$(_is_enabled $service && echo "YES" || echo "NO")
+    printf "$output_color%-30s %-10s %-10s\e[0m\n" $service $is_enabled $status_icon
   done
+  printf "%0.s-" {1..50} && printf "\n"
 }
 
 _services() {
