@@ -1,0 +1,66 @@
+version: "3.7"
+
+services:
+  ### Monica: Personal CRM. Remember everything about your friends, family and business relationships. ###
+  monica:
+    image: monica:apache
+    container_name: monica
+    restart: always
+    depends_on:
+      - monica-mariadb
+    environment:
+      - DB_HOST=monica-mariadb
+      - DB_PORT=3306
+      - DB_USERNAME=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - DB_DATABASE=${MYSQL_DATABASE}
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/monica-data:/var/www/html/storage
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.monica.loadbalancer.server.port=80
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.monica.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.monica.entrypoints=web
+      - traefik.http.routers.monica.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.monica-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.monica-secure.entrypoints=websecure
+
+  ### Monica database: MariaDB ###
+  monica-mariadb:
+    image: mariadb
+    container_name: monica-mariadb
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    volumes:
+      - ${VOLUME_DIR}/monica-db:/var/lib/mysql
+
+networks:
+  default:
+    name: monica-network
+  traefik-network:
+    external:
+      name: traefik-network
