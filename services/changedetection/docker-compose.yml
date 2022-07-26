@@ -1,0 +1,55 @@
+version: "3.7"
+
+services:
+  ### changedetection.io: The best and simplest self-hosted free open source website change detection monitoring and notification service. ###
+  changedetection:
+    image: dgtlmoon/changedetection.io
+    container_name: changedetection
+    restart: always
+    environment:
+      # - PLAYWRIGHT_DRIVER_URL=ws://changedetection-playwright:3000/?stealth=1&--disable-web-security=true
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/changedetection-data:/datastore
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.changedetection.loadbalancer.server.port=5000
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.changedetection.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.changedetection.entrypoints=web
+      - traefik.http.routers.changedetection.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.changedetection-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.changedetection-secure.entrypoints=websecure
+      - traefik.http.routers.changedetection-secure.middlewares=basic-auth@file
+
+  # changedetection-playwright:
+  #   image: browserless/chrome
+  #   container_name: changedetection-playwright
+  #   hostname: changedetection-playwright
+  #   restart: always
+  #   environment:
+  #     - TZ=${TZ}
+
+networks:
+  default:
+    name: changedetection-network
+  traefik-network:
+    external:
+      name: traefik-network
