@@ -1,0 +1,45 @@
+version: "3.7"
+
+services:
+  ## Appsmith: Appsmith is a low code, open-source developer tool to build internal applications quickly. ##
+  appsmith:
+    image: appsmith/appsmith-ce
+    container_name: appsmith
+    restart: always
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/appsmith-data:/appsmith-stacks
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.appsmith.loadbalancer.server.port=80
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.appsmith.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.appsmith.entrypoints=web
+      - traefik.http.routers.appsmith.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.appsmith-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.appsmith-secure.entrypoints=websecure
+
+networks:
+  default:
+    name: appsmith-network
+  traefik-network:
+    external:
+      name: traefik-network
