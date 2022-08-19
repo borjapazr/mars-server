@@ -7,6 +7,8 @@ include .env
 
 .PHONY: install
 install: ## Start all containers in background
+	@mkdir -p credentials
+	@touch credentials/users-credentials
 	@$(DOCKER_COMPOSE) up -d
 
 .PHONY: uninstall

@@ -168,7 +168,7 @@ _services() {
 }
 
 ## Global variables ##
-SERVICES=($(ls $SERVER_DIR/services))
+SERVICES=($(ls -I "_*" $SERVER_DIR/services))
 MINIMUM_DOCKER_VERSION=19.03
 MINIMUM_DOCKER_COMPOSE_VERSION=1.25
 MINIMUM_MAKE_VERSION=4.2
