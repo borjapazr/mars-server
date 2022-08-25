@@ -1,6 +1,22 @@
 version: "3.7"
 
 services:
+  ### Traefik Hub Agent: Traefik Hub agent for Traefik ###
+  traefik-hub-agent:
+    image: ghcr.io/traefik/hub-agent-traefik:experimental
+    container_name: traefik-hub-agent
+    restart: always
+    depends_on:
+      - traefik
+    command:
+      - run
+      - --hub.token=${TRAEFIK_HUB_TOKEN}
+      - --auth-server.advertise-url=http://hub-agent
+      - --traefik.host=traefik
+      - --traefik.tls.insecure=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
   ### Traefik: An open-source Edge Router that makes publishing your services a fun and easy experience ###
   traefik:
     image: traefik
@@ -17,8 +33,10 @@ services:
       - --global.checkNewVersion=true
       - --global.sendAnonymousUsage=true
 
-      ## Traefik pilot token ##
-      - --pilot.token=${TRAEFIK_PILOT_TOKEN}
+      ## Enable Hub communication (open the port 9900 and 9901 by default)
+      - --experimental.hub=true
+      - --hub.tls.insecure=true
+      - --metrics.prometheus.addrouterslabels=true
 
       ## Log Settings (options: ERROR, DEBUG, PANIC, FATAL, WARN, INFO) - https://docs.traefik.io/observability/logs ##
       - --log=true
@@ -35,8 +53,13 @@ services:
       # - --accesslog.format=json
 
       ## Metrics - https://doc.traefik.io/traefik/observability/metrics/overview ##
-      - --metrics=false
-      - --metrics.prometheus=false
+      - --metrics=true
+      - --metrics.prometheus=true
+
+      ## Tracing - https://doc.traefik.io/traefik/observability/tracing/overview ##
+      - --tracing=false
+      - --tracing.serviceName=traefik
+      - --tracing.spanNameLimit=150
 
       ## API Settings - https://docs.traefik.io/operations/api/, endpoints - https://docs.traefik.io/operations/api/#endpoints ##
       - --api=true
