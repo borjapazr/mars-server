@@ -51,3 +51,8 @@ To realise this project I have based myself on many similar projects. There were
 ## ⚖️ License
 
 The MIT License (MIT). Please see [License](LICENSE) for more information.
+
+
+### Infrastructure model
+
+![Infrastructure model](.infragenie/infrastructure_model.png)
