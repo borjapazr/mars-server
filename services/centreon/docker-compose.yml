@@ -1,0 +1,68 @@
+version: "3.7"
+
+services:
+  ### Centreon: Business-aware and AIOps-ready IT infrastructure monitoring ###
+  centreon:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: centreon
+    container_name: centreon
+    hostname: centreon
+    privileged: true
+    restart: always
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/centreon-data/centreon-config:/etc/centreon
+      - ${VOLUME_DIR}/centreon-data/centreon-engine-config:/etc/centreon-engine
+      - ${VOLUME_DIR}/centreon-data/plugins:/usr/lib/centreon/plugins
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.centreon.loadbalancer.server.port=80
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.centreon.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.centreon.entrypoints=web
+      - traefik.http.routers.centreon.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.centreon-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.centreon-secure.entrypoints=websecure
+
+  ### Centreon database: MariaDB ###
+  centreon-mariadb:
+    image: mariadb
+    container_name: centreon-mariadb
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    volumes:
+      - ./config/mariadb/service.conf:/etc/systemd/system/mariadb.service.d/centreon.conf
+      - ./config/mariadb/mariadb.cnf:/etc/mysql/conf.d/centreon.cnf
+      - ${VOLUME_DIR}/centreon-db:/var/lib/mysql
+
+networks:
+  default:
+    name: centreon-network
+  traefik-network:
+    external:
+      name: traefik-network
