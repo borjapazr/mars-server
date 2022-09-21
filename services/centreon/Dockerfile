@@ -1,5 +1,6 @@
 FROM centos:7.9.2009
 
+ARG TIMEZONE Europe/Paris
 EXPOSE 80
 
 # Update system
@@ -26,8 +27,12 @@ RUN yum install -y https://yum.centreon.com/standard/22.04/el7/stable/noarch/RPM
 RUN yum install -y centreon-central
 
 # Configuration
-RUN echo "date.timezone = Europe/Paris" >> /etc/php.d/50-centreon.ini
+RUN echo "date.timezone = $TIMEZONE" >> /etc/php.d/50-centreon.ini
 RUN systemctl restart php-fpm
 RUN systemctl enable php-fpm httpd24-httpd centreon cbd centengine gorgoned snmptrapd centreontrapd snmpd
+
+# Add scripts
+COPY scripts/enable-monitoring.sh /scripts/enable-monitoring.sh
+RUN chmod +x /scripts/enable-monitoring.sh
 
 CMD /usr/bin/systemctl

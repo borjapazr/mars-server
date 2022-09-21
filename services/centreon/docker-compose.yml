@@ -6,6 +6,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - TIMEZONE=${TZ}
     image: centreon
     container_name: centreon
     hostname: centreon
