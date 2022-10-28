@@ -6,3 +6,4 @@
 **/traefik/credentials
 **/*.private
 **/_*/
+**/_*

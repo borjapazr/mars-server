@@ -75,12 +75,14 @@ services:
       - --providers.docker.network=traefik-network
       - --providers.file.watch=true
       - --providers.file.directory=/srv/traefik/rules
+      - --providers.file.watch=true
 
       ## Entrypoints Settings - https://docs.traefik.io/routing/entrypoints/#configuration ##
       - --entryPoints.web.address=:80
       - --entryPoints.websecure.address=:443
       # Set security headers for https #
       - --entryPoints.websecure.http.middlewares=security-headers@file
+      - --serverstransport.insecureskipverify=true
       # Add Let's Encrypt as default certresolver for all services
       - --entrypoints.websecure.http.tls=true
       - --entrypoints.websecure.http.tls.certresolver=letsencrypt
@@ -132,11 +134,17 @@ services:
       - traefik.http.routers.wildcard-certs.tls.domains[0].main=*.${DOMAIN}
       - traefik.http.routers.wildcard-certs.tls.domains[0].sans=${DOMAIN}
 
-      # Traefik dashboard configuration
-      - traefik.http.routers.api.entrypoints=web
+      ## Traefik dashboard configuration ##
+      # Set HTTP domain and HTTP -> HTTPS redirection #
       - traefik.http.routers.api.rule=Host(`${DASHBOARD_DOMAIN}`)
-      - traefik.http.routers.api.service=api@internal
-      - traefik.http.routers.api.middlewares=basic-auth@file
+      - traefik.http.routers.api.entrypoints=web
+      - traefik.http.routers.api.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.api-secure.rule=Host(`${DASHBOARD_DOMAIN}`)
+      - traefik.http.routers.api-secure.entrypoints=websecure
+      - traefik.http.routers.api-secure.service=api@internal
+      - traefik.http.routers.api-secure.middlewares=basic-auth@file
 
 networks:
   default:

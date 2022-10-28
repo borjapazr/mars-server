@@ -43,9 +43,15 @@ services:
       # Set entrypoint port #
       - traefik.http.services.ddns-updater.loadbalancer.server.port=8080
 
-      # Set HTTP domain #
-      - traefik.http.routers.ddns-updater.entrypoints=web
+      # Set HTTP domain and HTTP -> HTTPS redirection #
       - traefik.http.routers.ddns-updater.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.ddns-updater.entrypoints=web
+      - traefik.http.routers.ddns-updater.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.ddns-updater-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.ddns-updater-secure.entrypoints=websecure
+      - traefik.http.routers.ddns-updater-secure.middlewares=basic-auth@file
 
 networks:
   default:
