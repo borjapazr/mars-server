@@ -12,6 +12,9 @@ services:
       - apparmor:unconfined
     environment:
       - DOCKER_HOST=netdata-docker-proxy:2375
+      - NETDATA_CLAIM_TOKEN=${NETDATA_CLAIM_TOKEN}
+      - NETDATA_CLAIM_URL=${NETDATA_CLAIM_URL}
+      - NETDATA_CLAIM_ROOMS=${NETDATA_CLAIM_ROOMS}
       - TZ=${TZ}
     volumes:
       - ./config:/etc/netdata
