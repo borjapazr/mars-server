@@ -1,0 +1,47 @@
+version: "3.7"
+
+services:
+  ### Home Assitant: Open source home automation that puts local control and privacy first ###
+  homeassistant:
+    image: homeassistant/home-assistant
+    container_name: homeassistant
+    restart: always
+    privileged: true
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/home-assitant-config:/config
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.homeassistant.loadbalancer.server.port=8123
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.homeassistant.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.homeassistant.entrypoints=web
+      - traefik.http.routers.homeassistant.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.homeassistant-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.homeassistant-secure.entrypoints=websecure
+
+networks:
+  default:
+    name: homeassistant-network
+  traefik-network:
+    external:
+      name: traefik-network

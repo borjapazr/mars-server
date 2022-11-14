@@ -22,6 +22,8 @@ services:
     image: traefik
     container_name: traefik
     restart: always
+    extra_hosts:
+      - host.docker.internal:172.17.0.1
     environment:
       - NAMECHEAP_API_KEY=${NAMECHEAP_API_KEY}
       - NAMECHEAP_API_USER=${NAMECHEAP_API_USER}
