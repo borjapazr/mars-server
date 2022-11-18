@@ -7,3 +7,4 @@
 **/*.private
 **/_*/
 **/_*
+**/authelia/config/

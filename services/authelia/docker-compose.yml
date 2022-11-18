@@ -1,0 +1,64 @@
+version: "3.7"
+
+services:
+  ### Authelia: The Single Sign-On Multi-Factor portal for web apps ###
+  authelia:
+    image: authelia/authelia
+    container_name: authelia
+    restart: always
+    healthcheck:
+      disable: true
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ./config:/config
+      - ${VOLUME_DIR}/authelia-data/logs:/logs
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.authelia.loadbalancer.server.port=9091
+
+      # Set authelia middleware #
+      - 'traefik.http.middlewares.authelia.forwardauth.address=http://authelia:9091/api/verify?rd=https://${DOMAIN}'
+      - 'traefik.http.middlewares.authelia.forwardauth.trustForwardHeader=true'
+      - 'traefik.http.middlewares.authelia.forwardauth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Name,Remote-Email'
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.authelia.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.authelia.entrypoints=web
+      - traefik.http.routers.authelia.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.authelia-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.authelia-secure.entrypoints=websecure
+
+  ### Authelia cache: Redis ###
+  authelia-redis:
+    image: redis:alpine
+    container_name: authelia-redis
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ./config:/config
+      - ${VOLUME_DIR}/redis-data:/data
+    restart: always
+
+networks:
+  default:
+    name: authelia-network
+  traefik-network:
+    external:
+      name: traefik-network

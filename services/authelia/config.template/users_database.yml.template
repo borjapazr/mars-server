@@ -1,0 +1,14 @@
+###############################################################
+#                         Users Database                      #
+###############################################################
+
+# List of users
+users:
+  authelia:
+    disabled: false
+    displayname: "Authelia Sample User"
+    password: "$argon2id$v=19$m=65536,t=3,p=4$jSF39KZIfg2Zc3/MD3LAkQ$betaso9tjGEiRXw+YENOtj7j6/PjmVgXhORxpMmMrio" # Password is "authelia"
+    email: authelia@authelia.com
+    groups:
+      - admins
+      - dev

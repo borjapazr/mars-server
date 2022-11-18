@@ -1,0 +1,83 @@
+###############################################################
+#                   Authelia configuration                    #
+###############################################################
+
+# Basic configuration
+server:
+  host: 0.0.0.0
+  port: 9091
+default_redirection_url: https://authelia.example.com
+log:
+  level: debug
+# This secret can also be set using the env variables AUTHELIA_JWT_SECRET_FILE
+jwt_secret: <generate_secret_key>
+theme: dark
+
+# Time-Based One Time Password Configuration. https://www.authelia.com/configuration/second-factor/time-based-one-time-password
+totp:
+  issuer: authelia.com
+  period: 30
+  skew: 1
+
+# Enable Duo Push Notification support
+duo_api:
+  hostname: <hostname>
+  integration_key: <integration_key>
+  # This secret can also be set using the env variables AUTHELIA_DUO_API_SECRET_KEY_FILE
+  secret_key: <secret_key>
+
+# Authentication backend configuration: file based user storage
+authentication_backend:
+  file:
+    path: /config/users_database.yml
+    password:
+      algorithm: argon2id
+      iterations: 1
+      salt_length: 16
+      parallelism: 8
+      memory: 1024
+
+# Access Control lists
+access_control:
+  default_policy: deny
+  rules:
+    # Rules applied to everyone
+    - domain: authelia.example.com
+      policy: bypass
+
+# Session configuration: use Redis to store sessions
+session:
+  name: authelia_session
+  # This secret can also be set using the env variables AUTHELIA_SESSION_SECRET_FILE
+  secret: <generate_secret>
+  expiration: 3600  # 1 hour
+  inactivity: 300  # 5 minutes
+  domain: example.com  # Should match whatever your root protected domain is
+
+  redis:
+    host: authelia-redis
+    port: 6379
+    # This secret can also be set using the env variables AUTHELIA_SESSION_REDIS_PASSWORD_FILE
+    # password: authelia
+
+# Brute force protection
+regulation:
+  max_retries: 3
+  find_time: 120
+  ban_time: 300
+
+# Storage configuration
+storage:
+  encryption_key: <generate_encryption_key>
+  local:
+    path: /config/db.sqlite3
+
+# Notifier configuration
+notifier:
+  smtp:
+    username: <username>
+    # This secret can also be set using the env variables AUTHELIA_NOTIFIER_SMTP_PASSWORD_FILE
+    password: <password>
+    host: <host>
+    port: <port>
+    sender: <sender>

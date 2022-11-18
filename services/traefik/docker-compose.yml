@@ -146,7 +146,7 @@ services:
       - traefik.http.routers.api-secure.rule=Host(`${DASHBOARD_DOMAIN}`)
       - traefik.http.routers.api-secure.entrypoints=websecure
       - traefik.http.routers.api-secure.service=api@internal
-      - traefik.http.routers.api-secure.middlewares=basic-auth@file
+      - traefik.http.routers.api-secure.middlewares=authelia@docker
 
 networks:
   default:

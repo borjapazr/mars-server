@@ -29,12 +29,12 @@ services:
       - traefik.http.services.landing.loadbalancer.server.port=80
 
       # Set HTTP domain and HTTP -> HTTPS redirection #
-      - traefik.http.routers.landing.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.landing.rule=Host(`${DOMAIN}`,`www.${DOMAIN}`)
       - traefik.http.routers.landing.entrypoints=web
       - traefik.http.routers.landing.middlewares=https-redirect@file
 
       # Set HTTPS domain #
-      - traefik.http.routers.landing-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.landing-secure.rule=Host(`${DOMAIN}`,`www.${DOMAIN}`)
       - traefik.http.routers.landing-secure.entrypoints=websecure
       - traefik.http.routers.landing-secure.middlewares=error-pages
 
