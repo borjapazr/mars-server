@@ -26,6 +26,11 @@ http:
         scheme: https
         permanent: true
 
+    cors-allow-all:
+      headers:
+        accessControlAllowOriginList: ["*"]
+        addVaryHeader: true
+
     basic-auth:
       basicAuth:
         usersFile: /srv/traefik/credentials/users-credentials

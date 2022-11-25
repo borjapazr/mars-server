@@ -39,11 +39,12 @@ services:
       # Set HTTP domain and HTTP -> HTTPS redirection #
       - traefik.http.routers.authelia.rule=Host(`${DOMAIN}`)
       - traefik.http.routers.authelia.entrypoints=web
-      - traefik.http.routers.authelia.middlewares=https-redirect@file
+      - traefik.http.routers.authelia.middlewares=cors-allow-all@file,https-redirect@file
 
       # Set HTTPS domain #
       - traefik.http.routers.authelia-secure.rule=Host(`${DOMAIN}`)
       - traefik.http.routers.authelia-secure.entrypoints=websecure
+      - traefik.http.routers.authelia-secure.middlewares=cors-allow-all@file
 
   ### Authelia cache: Redis ###
   authelia-redis:

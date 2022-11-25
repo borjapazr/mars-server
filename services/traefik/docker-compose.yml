@@ -65,7 +65,7 @@ services:
 
       ## API Settings - https://docs.traefik.io/operations/api/, endpoints - https://docs.traefik.io/operations/api/#endpoints ##
       - --api=true
-      - --api.insecure=false
+      - --api.insecure=true
       - --api.dashboard=true
       - --api.debug=true
       - --ping=false
@@ -75,7 +75,6 @@ services:
       - --providers.docker.watch=true
       - --providers.docker.exposedbydefault=false
       - --providers.docker.network=traefik-network
-      - --providers.file.watch=true
       - --providers.file.directory=/srv/traefik/rules
       - --providers.file.watch=true
 
