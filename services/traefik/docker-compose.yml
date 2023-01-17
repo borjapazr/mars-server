@@ -97,7 +97,7 @@ services:
       - --certificatesResolvers.letsencrypt.acme.email=${ACME_EMAIL}
       - --certificatesResolvers.letsencrypt.acme.storage=/srv/traefik/letsencrypt/acme.json
       - --certificatesresolvers.letsencrypt.acme.dnschallenge=true
-      - --certificatesresolvers.letsencrypt.acme.dnschallenge.delaybeforecheck=0
+      - --certificatesresolvers.letsencrypt.acme.dnschallenge.delaybeforecheck=120
       - --certificatesresolvers.letsencrypt.acme.dnschallenge.resolvers[0]=1.1.1.1:53
       - --certificatesresolvers.letsencrypt.acme.dnschallenge.resolvers[1]=8.8.8.8:53
       - --certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare
@@ -132,8 +132,10 @@ services:
       # Global wildcard certificates
       - traefik.http.routers.wildcard-certs.entrypoints=websecure
       - traefik.http.routers.wildcard-certs.tls.certresolver=letsencrypt
-      - traefik.http.routers.wildcard-certs.tls.domains[0].main=*.${DOMAIN}
-      - traefik.http.routers.wildcard-certs.tls.domains[0].sans=${DOMAIN}
+      - traefik.http.routers.wildcard-certs.tls.domains[0].main=*.${DOMAIN1}
+      - traefik.http.routers.wildcard-certs.tls.domains[0].sans=${DOMAIN1}
+      - traefik.http.routers.wildcard-certs.tls.domains[1].main=*.${DOMAIN2}
+      - traefik.http.routers.wildcard-certs.tls.domains[1].sans=${DOMAIN2}
 
       ## Traefik dashboard configuration ##
       # Set HTTP domain and HTTP -> HTTPS redirection #
