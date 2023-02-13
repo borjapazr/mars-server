@@ -1,0 +1,59 @@
+version: "3.7"
+
+services:
+  ### n8n: Workflow automation for technical people. ###
+  n8n:
+    image: n8nio/n8n
+    container_name: n8n
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - N8N_BASIC_AUTH_ACTIVE=false
+      - N8N_HOST=${DOMAIN}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - N8N_EMAIL_MODE=smtp
+      - N8N_SMTP_SSL=true
+      - N8N_SMTP_HOST=${SMTP_HOST}
+      - N8N_SMTP_PORT=${SMTP_PORT}
+      - N8N_SMTP_USER=${SMTP_USER}
+      - N8N_SMTP_PASS=${SMTP_PASSWORD}
+      - N8N_SMTP_SENDER=${SMTP_USER}
+      - WEBHOOK_URL=https://${DOMAIN}/
+      - GENERIC_TIMEZONE=${TZ}
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/n8n-data:/home/node/.n8n
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.n8n.loadbalancer.server.port=5678
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.n8n.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.n8n.entrypoints=web
+      - traefik.http.routers.n8n.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.n8n-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.n8n-secure.entrypoints=websecure
+
+networks:
+  default:
+    name: n8n-network
+  traefik-network:
+    external:
+      name: traefik-network

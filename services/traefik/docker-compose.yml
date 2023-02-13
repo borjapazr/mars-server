@@ -3,15 +3,15 @@ version: "3.7"
 services:
   ### Traefik Hub Agent: Traefik Hub agent for Traefik ###
   traefik-hub-agent:
-    image: ghcr.io/traefik/hub-agent-traefik:experimental
+    image: ghcr.io/traefik/hub-agent-traefik:v1.0.0
     container_name: traefik-hub-agent
-    restart: always
+    restart: on-failure
     depends_on:
       - traefik
     command:
       - run
       - --hub.token=${TRAEFIK_HUB_TOKEN}
-      - --auth-server.advertise-url=http://hub-agent
+      - --auth-server.advertise-url=http://traefik-hub-agent
       - --traefik.host=traefik
       - --traefik.tls.insecure=true
     volumes:
@@ -21,7 +21,7 @@ services:
   traefik:
     image: traefik
     container_name: traefik
-    restart: always
+    restart: on-failure
     extra_hosts:
       - host.docker.internal:172.17.0.1
     environment:
