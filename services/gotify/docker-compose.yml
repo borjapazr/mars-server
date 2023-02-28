@@ -23,6 +23,7 @@ services:
     labels:
       ## Watchtower configuration ##
       - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.monitor-only=true
 
       ## Diun configuration ##
       - diun.enable=true

@@ -7,7 +7,7 @@ services:
     container_name: error-pages
     restart: always
     environment:
-      - TEMPLATE_NAME=hacker-terminal
+      - TEMPLATE_NAME=lost-in-space
     networks:
       - default
       - traefik-network

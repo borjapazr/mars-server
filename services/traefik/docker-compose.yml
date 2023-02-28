@@ -3,9 +3,9 @@ version: "3.7"
 services:
   ### Traefik Hub Agent: Traefik Hub agent for Traefik ###
   traefik-hub-agent:
-    image: ghcr.io/traefik/hub-agent-traefik:v1.0.0
+    image: ghcr.io/traefik/hub-agent-traefik:v1.0.1
     container_name: traefik-hub-agent
-    restart: on-failure
+    restart: always
     depends_on:
       - traefik
     command:
@@ -19,9 +19,9 @@ services:
 
   ### Traefik: An open-source Edge Router that makes publishing your services a fun and easy experience ###
   traefik:
-    image: traefik
+    image: traefik:2.9
     container_name: traefik
-    restart: on-failure
+    restart: always
     extra_hosts:
       - host.docker.internal:172.17.0.1
     environment:
