@@ -6,8 +6,10 @@ services:
     image: netdata/netdata
     container_name: netdata
     restart: always
+    pid: host
     cap_add:
       - SYS_PTRACE
+      - SYS_ADMIN
     security_opt:
       - apparmor:unconfined
     environment:
@@ -49,7 +51,7 @@ services:
       # Set HTTPS domain #
       - traefik.http.routers.netdata-secure.rule=Host(`${DOMAIN}`)
       - traefik.http.routers.netdata-secure.entrypoints=websecure
-      - traefik.http.routers.netdata-secure.middlewares=basic-auth@file
+      - traefik.http.routers.netdata-secure.middlewares=authelia@docker
   ### NetData Docker socket proxy ###
   netdata-docker-proxy:
     image: tecnativa/docker-socket-proxy
