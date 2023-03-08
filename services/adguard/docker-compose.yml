@@ -40,5 +40,5 @@ networks:
   default:
     name: adguard-network
   traefik-network:
-    external:
-      name: traefik-network
+    name: traefik-network
+    external: true

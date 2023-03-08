@@ -141,5 +141,5 @@ networks:
   default:
     name: kafka-network
   traefik-network:
-    external:
-      name: traefik-network
+    name: traefik-network
+    external: true

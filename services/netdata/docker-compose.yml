@@ -66,5 +66,5 @@ networks:
   default:
     name: netdata-network
   traefik-network:
-    external:
-      name: traefik-network
+    name: traefik-network
+    external: true
