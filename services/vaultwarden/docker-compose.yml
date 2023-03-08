@@ -11,8 +11,6 @@ services:
       - TZ=${TZ}
     volumes:
       - ${VOLUME_DIR}/vaultwarden-data:/data
-    ports:
-      - 50000:50000
     networks:
       - default
       - traefik-network
