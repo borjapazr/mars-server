@@ -1,0 +1,46 @@
+version: "3.7"
+
+services:
+  ### Answer: An open-source knowledge-based community software. You can use it quickly to build Q&A community for your products, customers, teams, and more. ###
+  answer:
+    image: answerdev/answer
+    container_name: answer
+    restart: always
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/answer-data:/data
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.monitor-only=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.answer.loadbalancer.server.port=80
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.answer.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.answer.entrypoints=web
+      - traefik.http.routers.answer.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.answer-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.answer-secure.entrypoints=websecure
+
+networks:
+  default:
+    name: answer-network
+  traefik-network:
+    name: traefik-network
+    external: true
