@@ -1,0 +1,78 @@
+version: "3.7"
+
+services:
+  ### BookStack: A simple, self-hosted, easy-to-use platform for organising and storing information. ###
+  bookstack:
+    image: linuxserver/bookstack
+    container_name: bookstack
+    restart: always
+    environment:
+      - DB_HOST=bookstack-mariadb
+      - DB_PORT=3306
+      - DB_USER=${MYSQL_USER}
+      - DB_PASS=${MYSQL_PASSWORD}
+      - DB_DATABASE=${MYSQL_DATABASE}
+      - MAIL_DRIVER=smtp
+      - MAIL_HOST=${SMTP_HOST}
+      - MAIL_PORT=${SMTP_PORT}
+      - MAIL_USERNAME=${SMTP_USER}
+      - MAIL_PASSWORD=${SMTP_PASS}
+      - MAIL_FROM=${MAIL_ACCOUNT}
+      - MAIL_FROM_NAME=${MAIL_NAME}
+      - MAIL_ENCRYPTION=tls
+      - APP_URL=https://${DOMAIN}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/bookstack-data:/config
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.monitor-only=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.bookstack.loadbalancer.server.port=80
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.bookstack.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.bookstack.entrypoints=web
+      - traefik.http.routers.bookstack.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.bookstack-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.bookstack-secure.entrypoints=websecure
+
+  ### BookStack database: MariaDB ###
+  bookstack-mariadb:
+    image: linuxserver/mariadb
+    container_name: bookstack-mariadb
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/bookstack-db:/config
+
+networks:
+  default:
+    name: bookstack-network
+  traefik-network:
+    name: traefik-network
+    external: true
