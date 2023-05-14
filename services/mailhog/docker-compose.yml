@@ -1,0 +1,48 @@
+version: "3.7"
+
+services:
+  ### MailHog: Web and API based SMTP testing ###
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    restart: always
+    command: ["-smtp-bind-addr", "0.0.0.0:1025"]
+    environment:
+      - TZ=${TZ}
+    ports:
+      - 1025:1025
+      - 8025:8025
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.monitor-only=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.mailhog.loadbalancer.server.port=8025
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.mailhog.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.mailhog.entrypoints=web
+      - traefik.http.routers.mailhog.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.mailhog-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.mailhog-secure.entrypoints=websecure
+
+networks:
+  default:
+    name: mailhog-network
+  traefik-network:
+    name: traefik-network
+    external: true
