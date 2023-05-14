@@ -37,7 +37,7 @@ services:
       # Set HTTPS domain #
       - traefik.http.routers.changedetection-secure.rule=Host(`${DOMAIN}`)
       - traefik.http.routers.changedetection-secure.entrypoints=websecure
-      - traefik.http.routers.changedetection-secure.middlewares=basic-auth@file
+      - traefik.http.routers.changedetection-secure.middlewares=authelia@docker
 
   # changedetection-playwright:
   #   image: browserless/chrome

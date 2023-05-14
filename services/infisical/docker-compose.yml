@@ -1,0 +1,91 @@
+version: "3.7"
+
+services:
+  ### Infisical: OPEN SOURCE and END-TO-END ENCRYPTED platform that lets you securely sync secrets and configs across your team, devices, and infrastructure. ###
+  infisical-nginx:
+    image: nginx
+    container_name: infisical-nginx
+    restart: always
+    depends_on:
+      - infisical-frontend
+      - infisical-backend
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.monitor-only=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.infisical.loadbalancer.server.port=80
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.infisical.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.infisical.entrypoints=web
+      - traefik.http.routers.infisical.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.infisical-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.infisical-secure.entrypoints=websecure
+
+  infisical-backend:
+    image: infisical/backend
+    container_name: infisical-backend
+    restart: unless-stopped
+    depends_on:
+      - infisical-mongodb
+    environment:
+      - NODE_ENV=production
+      - SITE_URL=https://${DOMAIN}
+      - MONGO_URL=mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@infisical-mongodb:27017/?authSource=admin
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - JWT_SIGNUP_SECRET=${JWT_SIGNUP_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - JWT_AUTH_SECRET=${JWT_AUTH_SECRET}
+      - JWT_SERVICE_SECRET=${JWT_SERVICE_SECRET}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_SECURE=true
+      - SMTP_FROM_ADDRESS=${SMTP_FROM_ADDRESS}
+      - SMTP_FROM_NAME=${SMTP_FROM_NAME}
+
+  infisical-frontend:
+    image: infisical/frontend
+    container_name: infisical-frontend
+    restart: unless-stopped
+    depends_on:
+      - infisical-backend
+    environment:
+      - TELEMETRY_ENABLED=${TELEMETRY_ENABLED}
+
+  infisical-mongodb:
+    image: mongo:4.4
+    container_name: infisical-mongodb
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+    volumes:
+      - ${VOLUME_DIR}/infisical-db/mongodb:/data/db
+
+networks:
+  default:
+    name: infisical-network
+  traefik-network:
+    name: traefik-network
+    external: true
