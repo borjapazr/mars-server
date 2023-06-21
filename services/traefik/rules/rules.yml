@@ -3,18 +3,24 @@ tls:
   options:
     default:
       minVersion: VersionTLS12
-      curvePreferences:
-        - secp521r1
-        - secp384r1
       sniStrict: true
       cipherSuites:
-        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
-        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
-        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
         - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+        - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
-
+        - TLS_AES_128_GCM_SHA256
+        - TLS_AES_256_GCM_SHA384
+        - TLS_CHACHA20_POLY1305_SHA256
+      curvePreferences:
+        - CurveP521
+        - CurveP384
+      alpnProtocols:
+        - h2
+        - http/1.1
     mintls13:
       minVersion: VersionTLS13
 
@@ -25,6 +31,23 @@ http:
       redirectScheme:
         scheme: https
         permanent: true
+
+    non-www-redirect:
+      redirectregex:
+        regex: "^https?://www\\.(.+)"
+        replacement: "https://${1}"
+        permanent: true
+
+    www-redirect:
+      redirectregex:
+        regex: "^https?://(?:www\\.)?(.+)"
+        replacement: "https://www.${1}"
+        permanent: true
+
+    compression:
+      compress:
+        excludedContentTypes:
+          - text/event-stream
 
     cors-allow-all:
       headers:
@@ -37,15 +60,15 @@ http:
 
     security-headers:
       headers:
+        addVaryHeader: true
         forceSTSHeader: true
         browserXssFilter: true
         contentTypeNosniff: true
         frameDeny: true
         sslRedirect: true
-        #  HSTS Configuration
         stsIncludeSubdomains: true
         stsPreload: true
         stsSeconds: 31536000
+        customFrameOptionsValue: SAMEORIGIN
         customRequestHeaders:
-          X-Frame-Options: "SAMEORIGIN"
-        customFrameOptionsValue: "SAMEORIGIN"
+          X-Frame-Options: SAMEORIGIN

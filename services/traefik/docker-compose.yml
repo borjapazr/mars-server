@@ -72,8 +72,9 @@ services:
 
       ## Provider Settings - https://docs.traefik.io/providers/docker/#provider-configuration ##
       - --providers.docker=true
+      - --providers.docker.swarmMode=false
+      - --providers.docker.exposedByDefault=false
       - --providers.docker.watch=true
-      - --providers.docker.exposedbydefault=false
       - --providers.docker.network=traefik-network
       - --providers.file.directory=/srv/traefik/rules
       - --providers.file.watch=true
@@ -87,6 +88,12 @@ services:
       # Add Let's Encrypt as default certresolver for all services
       - --entrypoints.websecure.http.tls=true
       - --entrypoints.websecure.http.tls.certresolver=letsencrypt
+      - --entrypoints.websecure.http.tls.domains[0].main=*.${DOMAIN1}
+      - --entrypoints.websecure.http.tls.domains[0].sans=${DOMAIN1}
+      - --entrypoints.websecure.http.tls.domains[1].main=*.${DOMAIN2}
+      - --entrypoints.websecure.http.tls.domains[1].sans=${DOMAIN2}
+      - --entrypoints.websecure.http.tls.domains[2].main=*.${DOMAIN3}
+      - --entrypoints.websecure.http.tls.domains[2].sans=${DOMAIN3}
 
       ## Global HTTP -> HTTPS redirection - https://blog.jensknipper.de/blog/traefik-http-to-https-redirect ##
       # - --entryPoints.web.http.redirections.entryPoint.to=websecure
@@ -129,7 +136,7 @@ services:
       # - traefik.http.routers.http-catchall.middlewares=redirect-to-https
       # - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
 
-      # Global wildcard certificates
+      # Force global wildcard certificates generation
       - traefik.http.routers.wildcard-certs.entrypoints=websecure
       - traefik.http.routers.wildcard-certs.tls.certresolver=letsencrypt
       - traefik.http.routers.wildcard-certs.tls.domains[0].main=*.${DOMAIN1}
