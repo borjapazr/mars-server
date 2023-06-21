@@ -19,6 +19,10 @@ services:
       - DOMAIN2_TARGET_DOMAIN=${DOMAIN2_TARGET_DOMAIN}
       - DOMAIN2_ZONE_ID=${DOMAIN2_ZONE_ID}
       - DOMAIN2_PROXIED=true
+      - DOMAIN3=${DOMAIN3}
+      - DOMAIN3_TARGET_DOMAIN=${DOMAIN3_TARGET_DOMAIN}
+      - DOMAIN3_ZONE_ID=${DOMAIN3_ZONE_ID}
+      - DOMAIN3_PROXIED=true
       - TZ=${TZ}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro

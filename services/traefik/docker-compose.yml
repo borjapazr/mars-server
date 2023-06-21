@@ -136,6 +136,8 @@ services:
       - traefik.http.routers.wildcard-certs.tls.domains[0].sans=${DOMAIN1}
       - traefik.http.routers.wildcard-certs.tls.domains[1].main=*.${DOMAIN2}
       - traefik.http.routers.wildcard-certs.tls.domains[1].sans=${DOMAIN2}
+      - traefik.http.routers.wildcard-certs.tls.domains[2].main=*.${DOMAIN3}
+      - traefik.http.routers.wildcard-certs.tls.domains[2].sans=${DOMAIN3}
 
       ## Traefik dashboard configuration ##
       # Set HTTP domain and HTTP -> HTTPS redirection #

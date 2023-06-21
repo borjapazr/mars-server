@@ -1,0 +1,23 @@
+version: "3.7"
+
+services:
+  ### Datadog Agent: The Datadog Agent collects metrics and events from your systems and apps. ###
+  datadog-agent:
+    image: gcr.io/datadoghq/agent:7
+    container_name: datadog-agent
+    restart: always
+    environment:
+      - DD_API_KEY=${DD_API_KEY}
+      - DD_SITE=${DD_SITE}
+      - TZ=${TZ}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+
+networks:
+  default:
+    name: datadog-agent-network
+  traefik-network:
+    name: traefik-network
+    external: true
