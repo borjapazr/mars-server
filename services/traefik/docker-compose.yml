@@ -1,25 +1,9 @@
 version: "3.7"
 
 services:
-  ### Traefik Hub Agent: Traefik Hub agent for Traefik ###
-  traefik-hub-agent:
-    image: ghcr.io/traefik/hub-agent-traefik:v1.0.1
-    container_name: traefik-hub-agent
-    restart: always
-    depends_on:
-      - traefik
-    command:
-      - run
-      - --hub.token=${TRAEFIK_HUB_TOKEN}
-      - --auth-server.advertise-url=http://traefik-hub-agent
-      - --traefik.host=traefik
-      - --traefik.tls.insecure=true
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-
   ### Traefik: An open-source Edge Router that makes publishing your services a fun and easy experience ###
   traefik:
-    image: traefik:2.9
+    image: traefik:2.10
     container_name: traefik
     restart: always
     extra_hosts:
@@ -34,11 +18,6 @@ services:
       ## Global settings ##
       - --global.checkNewVersion=true
       - --global.sendAnonymousUsage=true
-
-      ## Enable Hub communication (open the port 9900 and 9901 by default)
-      - --experimental.hub=true
-      - --hub.tls.insecure=true
-      - --metrics.prometheus.addrouterslabels=true
 
       ## Log Settings (options: ERROR, DEBUG, PANIC, FATAL, WARN, INFO) - https://docs.traefik.io/observability/logs ##
       - --log=true
