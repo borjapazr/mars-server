@@ -1,0 +1,68 @@
+version: "3.7"
+
+services:
+  ### NocoDB: An open source #NoCode platform that turns any database into a smart spreadsheet. ###
+  nocodb:
+    image: nocodb/nocodb:0.109.2
+    container_name: nocodb
+    restart: always
+    depends_on:
+      - nocodb-postgresql
+    environment:
+      - NC_SMTP_FROM=${SMTP_FROM_ADDRESS}
+      - NC_SMTP_HOST=${SMTP_HOST}
+      - NC_SMTP_PORT=${SMTP_PORT}
+      - NC_SMTP_USERNAME=${SMTP_USERNAME}
+      - NC_SMTP_PASSWORD=${SMTP_PASSWORD}
+      - NC_SMTP_SECURE=true
+      - NC_DB=pg://nocodb-postgresql:5432?u=${DB_USER}&p=${DB_PASSWORD}&d=${DB_NAME}
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/nocodb-data:/usr/app/data
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.monitor-only=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.nocodb.loadbalancer.server.port=8080
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.nocodb.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.nocodb.entrypoints=web
+      - traefik.http.routers.nocodb.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.nocodb-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.nocodb-secure.entrypoints=websecure
+
+  ### NocoDB database: PostgreSQL ###
+  nocodb-postgresql:
+    image: postgres:15
+    container_name: nocodb-postgresql
+    restart: always
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/nocodb-db:/var/lib/postgresql/data
+
+networks:
+  default:
+    name: nocodb-network
+  traefik-network:
+    name: traefik-network
+    external: true
