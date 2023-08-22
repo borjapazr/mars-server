@@ -1,0 +1,49 @@
+version: "3.7"
+
+services:
+  ### Zot: OCI-native container image registry, simplified. ###
+  zot:
+    image: ghcr.io/project-zot/zot-linux-amd64:v2.0.0-rc6
+    container_name: zot
+    restart: always
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ./config/config.json:/etc/zot/config.json:ro
+      - ./credentials/users-credentials:/tmp/credentials
+      - ${VOLUME_DIR}/data:/tmp/zot
+      - ${VOLUME_DIR}/logs:/tmp/logs
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.monitor-only=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.zot.loadbalancer.server.port=5000
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.zot.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.zot.entrypoints=web
+      - traefik.http.routers.zot.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.zot-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.zot-secure.entrypoints=websecure
+
+networks:
+  default:
+    name: zot-network
+  traefik-network:
+    name: traefik-network
+    external: true

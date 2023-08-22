@@ -1,0 +1,80 @@
+version: "3.7"
+
+services:
+  ### Gitea: A lightweight DevOps platform. ###
+  gitea:
+    image: gitea/gitea:1.20.2
+    container_name: gitea
+    restart: always
+    depends_on:
+      - gitea-postgresql
+    environment:
+      - USER=git
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__database__DB_TYPE=postgres
+      - GITEA__database__HOST=gitea-postgresql:5432
+      - GITEA__database__USER=${DB_USER}
+      - GITEA__database__PASSWD=${DB_PASSWORD}
+      - GITEA__database__NAME=${DB_NAME}
+      - GITEA__mailer__ENABLED=true
+      - GITEA__mailer__PROTOCOL=smtps
+      - GITEA__mailer__FROM=${MAIL}
+      - GITEA__mailer__SMTP_ADDR=${SMTP_HOST}
+      - GITEA__mailer__SMTP_PORT=${SMTP_PORT}
+      - GITEA__mailer__USER=${SMTP_USER}
+      - GITEA__mailer__PASSWD=${SMTP_PASSWORD}
+      - GITEA__service__DISABLE_REGISTRATION=true
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/data:/var/lib/gitea
+      - ${VOLUME_DIR}/config:/etc/gitea
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.monitor-only=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.gitea.loadbalancer.server.port=3000
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.gitea.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.gitea.entrypoints=web
+      - traefik.http.routers.gitea.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.gitea-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.gitea-secure.entrypoints=websecure
+
+  ### Gitea database: PostgreSQL ###
+  gitea-postgresql:
+    image: postgres:15
+    container_name: gitea-postgresql
+    restart: always
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/db:/var/lib/postgresql/data
+
+networks:
+  default:
+    name: gitea-network
+  traefik-network:
+    name: traefik-network
+    external: true

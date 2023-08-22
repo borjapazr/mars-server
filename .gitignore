@@ -5,6 +5,7 @@
 **/netdata/config/health_alarm_notify.conf
 **/netdata/config/.container-hostname
 **/traefik/credentials
+**/zot/credentials
 **/*.private
 **/_*/
 **/_*

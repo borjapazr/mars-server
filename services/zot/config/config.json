@@ -1,0 +1,38 @@
+{
+  "distSpecVersion": "1.1.0-dev",
+  "storage": {
+    "rootDirectory": "/tmp/zot"
+  },
+  "http": {
+    "address": "0.0.0.0",
+    "port": "5000",
+    "auth": {
+      "htpasswd": {
+        "path": "/tmp/credentials"
+      }
+    }
+  },
+  "log": {
+    "level": "debug",
+    "output": "/tmp/logs/zot.log",
+    "audit": "/tmp/logs/zot-audit.log"
+  },
+  "extensions": {
+    "search": {
+      "enable": true,
+      "cve": {
+        "updateInterval": "2h"
+      }
+    },
+    "ui": {
+      "enable": true
+    },
+    "mgmt": {
+      "enable": true
+    },
+    "scrub": {
+      "enable": true,
+      "interval": "24h"
+    }
+  }
+}
