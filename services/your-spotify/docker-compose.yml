@@ -1,0 +1,107 @@
+version: "3.7"
+
+services:
+  ### Your Spotify sERVER: Self hosted Spotify tracking dashboard ###
+  your-spotify-server:
+    image: yooooomi/your_spotify_server
+    container_name: your-spotify-server
+    restart: always
+    depends_on:
+      - your-spotify-mongodb
+    environment:
+      - PORT=8080
+      - API_ENDPOINT=https://${DOMAIN}/api
+      - CLIENT_ENDPOINT=https://${DOMAIN}
+      - SPOTIFY_PUBLIC=a1d12e336796416198e28dbdb0765e71
+      - SPOTIFY_SECRET=f4caf00b9ee74ade836abefe975936c9
+      - MONGO_ENDPOINT=mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@your-spotify-mongodb:27017/your_spotify?authSource=admin
+      - TZ=${TZ}
+    ports:
+      - 8080:8080
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.monitor-only=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.your-spotify-server.loadbalancer.server.port=8080
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.your-spotify-server.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)
+      - traefik.http.routers.your-spotify-server.entrypoints=web
+      - traefik.http.routers.your-spotify-server.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.your-spotify-server-secure.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)
+      - traefik.http.routers.your-spotify-server-secure.entrypoints=websecure
+      - traefik.http.routers.your-spotify-server-secure.middlewares=your-spotify-server-strip
+
+      # Specific OnlyOffice configuration #
+      - traefik.http.middlewares.your-spotify-server-strip.stripprefix.prefixes=/api
+      - traefik.http.middlewares.your-spotify-server-strip.stripprefix.forceSlash=true
+
+  ### Your Spotify database: Mongo ###
+  your-spotify-mongodb:
+    image: mongo:4
+    container_name: your-spotify-mongodb
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+    volumes:
+      - ${VOLUME_DIR}/db:/data/db
+
+  your-spotify-web:
+    image: yooooomi/your_spotify_client
+    container_name: your-spotify-web
+    restart: always
+    environment:
+      - API_ENDPOINT=https://${DOMAIN}/api
+      - TZ=${TZ}
+    ports:
+      - 3000:3000
+    networks:
+      - default
+      - traefik-network
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.monitor-only=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.your-spotify-web.loadbalancer.server.port=3000
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.your-spotify-web.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.your-spotify-web.entrypoints=web
+      - traefik.http.routers.your-spotify-web.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.your-spotify-web-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.your-spotify-web-secure.entrypoints=websecure
+
+networks:
+  default:
+    name: your-spotify-network
+  traefik-network:
+    name: traefik-network
+    external: true
