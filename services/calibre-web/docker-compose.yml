@@ -1,0 +1,53 @@
+version: "3.7"
+
+services:
+  ### Calibre Web: A web app providing a clean interface for browsing, reading and downloading eBooks using an existing Calibre database. ###
+  calibre-web:
+    image: lscr.io/linuxserver/calibre-web:0.6.20
+    container_name: calibre-web
+    restart: always
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - DOCKER_MODS=linuxserver/mods:universal-calibre
+      - TZ=${TZ}
+    volumes:
+      - ${VOLUME_DIR}/data:/config
+      - ${VOLUME_DIR}/library:/books
+      - ./mods:/custom-cont-init.d:ro
+    networks:
+      - default
+      - traefik-network
+    ports:
+      - 8083:8083
+    labels:
+      ## Watchtower configuration ##
+      - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.monitor-only=true
+
+      ## Diun configuration ##
+      - diun.enable=true
+
+      ## Traefik configuration ##
+      # Enable Traefik #
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Set entrypoint port #
+      - traefik.http.services.calibre.loadbalancer.server.port=8083
+
+      # Set HTTP domain and HTTP -> HTTPS redirection #
+      - traefik.http.routers.calibre.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.calibre.entrypoints=web
+      - traefik.http.routers.calibre.middlewares=https-redirect@file
+
+      # Set HTTPS domain #
+      - traefik.http.routers.calibre-secure.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.calibre-secure.entrypoints=websecure
+
+networks:
+  default:
+    name: calibre-network
+  traefik-network:
+    name: traefik-network
+    external: true
