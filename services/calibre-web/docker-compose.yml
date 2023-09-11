@@ -44,6 +44,10 @@ services:
       # Set HTTPS domain #
       - traefik.http.routers.calibre-secure.rule=Host(`${DOMAIN}`)
       - traefik.http.routers.calibre-secure.entrypoints=websecure
+      - traefik.http.routers.calibre-secure.middlewares=calibre-logout,authelia@docker
+      - traefik.http.middlewares.calibre-logout.redirectregex.regex=https://${DOMAIN}/logout
+      - traefik.http.middlewares.calibre-logout.redirectregex.replacement=${LOGOUT_REDIRECT_URL}
+      - traefik.http.middlewares.calibre-logout.redirectregex.permanent=true
 
 networks:
   default:
