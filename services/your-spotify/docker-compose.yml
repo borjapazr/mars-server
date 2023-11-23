@@ -12,8 +12,8 @@ services:
       - PORT=8080
       - API_ENDPOINT=https://${DOMAIN}/api
       - CLIENT_ENDPOINT=https://${DOMAIN}
-      - SPOTIFY_PUBLIC=a1d12e336796416198e28dbdb0765e71
-      - SPOTIFY_SECRET=f4caf00b9ee74ade836abefe975936c9
+      - SPOTIFY_PUBLIC=${SPOTIFY_PUBLIC}
+      - SPOTIFY_SECRET=${SPOTIFY_SECRET}
       - MONGO_ENDPOINT=mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@your-spotify-mongodb:27017/your_spotify?authSource=admin
       - TZ=${TZ}
     ports:
