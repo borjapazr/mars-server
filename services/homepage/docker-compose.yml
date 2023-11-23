@@ -3,7 +3,7 @@ version: "3.7"
 services:
   ### Homepage: A highly customizable homepage (or startpage / application dashboard) with Docker and service API integrations ###
   homepage:
-    image: ghcr.io/benphelps/homepage
+    image: ghcr.io/gethomepage/homepage:latest
     container_name: homepage
     restart: always
     environment:
