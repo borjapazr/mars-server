@@ -8,20 +8,30 @@ services:
     container_name: ddns-updater
     restart: always
     environment:
+      # Public IP Scanner
       - PERIOD=5m
       - UPDATE_COOLDOWN_PERIOD=5m
-      - IP_METHOD=cycle
-      - IPV4_METHOD=cycle
-      - IPV6_METHOD=cycle
       - HTTP_TIMEOUT=10s
-      - LISTENING_PORT=8080
+      - PUBLICIP_FETCHERS=all
+      - PUBLICIP_HTTP_PROVIDERS=all
+      - PUBLICIPV4_HTTP_PROVIDERS=all
+      - PUBLICIPV6_HTTP_PROVIDERS=all
+      - PUBLICIP_DNS_PROVIDERS=all
+      - PUBLICIP_DNS_TIMEOUT=3s
+      # Web UI
+      - LISTENING_ADDRESS=:8080
       - ROOT_URL=/
+      # Data
+      - DATADIR=/updater/data
+      # Backup
       - BACKUP_PERIOD=0
       - BACKUP_DIRECTORY=/updater/data
-      - LOG_ENCODING=console
+      # Logger
       - LOG_LEVEL=info
-      - GOTIFY_URL=${GOTIFY_ENDPOINT}
-      - GOTIFY_TOKEN=${GOTIFY_TOKEN}
+      - LOG_CALLER=hidden
+      # Notifications
+      - SHOUTRRR_ADDRESSES=gotify://${GOTIFY_ENDPOINT}/${GOTIFY_TOKEN}
+      # Timezone
       - TZ=${TZ}
     volumes:
       - ./data:/updater/data

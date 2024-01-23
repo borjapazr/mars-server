@@ -3,7 +3,7 @@ version: "3.7"
 services:
   ### Moodle database: MariaDB ###
   moodle-mariadb:
-    image: mariadb
+    image: mariadb:10.10
     container_name: moodle-mariadb
     restart: always
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
@@ -16,7 +16,7 @@ services:
       - ${VOLUME_DIR}/moodle-db:/var/lib/mysql
   ## Moodle: A very popular open source learning management solution (LMS) for the delivery of elearning courses and programs. ##
   moodle:
-    image: bitnami/moodle
+    image: bitnami/moodle:4.3.0
     container_name: moodle
     restart: always
     depends_on:
