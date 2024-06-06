@@ -26,16 +26,16 @@ services:
       # - --log.format=json
 
       ## Access Log - https://doc.traefik.io/traefik/observability/access-logs ##
-      - --accesslog=true
-      - --accesslog.filepath=/srv/traefik/accesslog/traefik-access.log
-      - --accesslog.fields.defaultmode=keep
-      - --accesslog.fields.headers.defaultmode=keep
+      - --accesslog=false
+      - --accesslog.filePath=/srv/traefik/accesslog/traefik-access.log
+      - --accesslog.fields.defaultMode=keep
+      - --accesslog.fields.headers.defaultMode=keep
       - --accesslog.bufferingSize=100
       # - --accesslog.format=json
 
       ## Metrics - https://doc.traefik.io/traefik/observability/metrics/overview ##
-      - --metrics=true
-      - --metrics.prometheus=true
+      - --metrics=false
+      - --metrics.prometheus=false
 
       ## Tracing - https://doc.traefik.io/traefik/observability/tracing/overview ##
       - --tracing=false
@@ -139,5 +139,5 @@ services:
 
 networks:
   default:
-    external:
-      name: traefik-network
+    name: traefik-network
+    external: true
